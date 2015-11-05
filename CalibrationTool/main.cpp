@@ -6,7 +6,7 @@ using namespace CalibrationTool;
 int main() {
 
 	MainForm ^fm = gcnew MainForm();
-	fm->ShowDialog();//
+	fm->ShowDialog();//form‚Ì•\Ž¦
 	return 0;
 
 }
