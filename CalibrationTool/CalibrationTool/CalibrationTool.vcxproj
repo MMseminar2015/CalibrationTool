@@ -29,16 +29,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -89,12 +89,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\dev\opencv_2.4.10\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\dev\opencv_2.4.10\build\include;C:\Program Files (x86)\Point Grey Research\FlyCapture2\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_calib3d2410d.lib;opencv_contrib2410d.lib;opencv_core2410d.lib;opencv_features2d2410d.lib;opencv_flann2410d.lib;opencv_gpu2410d.lib;opencv_highgui2410d.lib;opencv_imgproc2410d.lib;opencv_legacy2410d.lib;opencv_ml2410d.lib;opencv_nonfree2410d.lib;opencv_objdetect2410d.lib;opencv_ocl2410d.lib;opencv_photo2410d.lib;opencv_stitching2410d.lib;opencv_superres2410d.lib;opencv_ts2410d.lib;opencv_video2410d.lib;opencv_videostab2410d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\dev\opencv_2.4.10\build\x86\vc12\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_calib3d2410d.lib;opencv_contrib2410d.lib;opencv_core2410d.lib;opencv_features2d2410d.lib;opencv_flann2410d.lib;opencv_gpu2410d.lib;opencv_highgui2410d.lib;opencv_imgproc2410d.lib;opencv_legacy2410d.lib;opencv_ml2410d.lib;opencv_nonfree2410d.lib;opencv_objdetect2410d.lib;opencv_ocl2410d.lib;opencv_photo2410d.lib;opencv_stitching2410d.lib;opencv_superres2410d.lib;opencv_ts2410d.lib;opencv_video2410d.lib;opencv_videostab2410d.lib;FlyCapture2d_v110.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\dev\opencv_2.4.10\build\x86\vc11\lib;C:\Program Files (x86)\Point Grey Research\FlyCapture2\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -112,12 +112,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\dev\opencv_2.4.10\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\dev\opencv_2.4.10\build\include;C:\Program Files (x86)\Point Grey Research\FlyCapture2\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opencv_calib3d2410.lib;opencv_contrib2410.lib;opencv_core2410.lib;opencv_features2d2410.lib;opencv_flann2410.lib;opencv_gpu2410.lib;opencv_highgui2410.lib;opencv_imgproc2410.lib;opencv_legacy2410.lib;opencv_ml2410.lib;opencv_nonfree2410.lib;opencv_objdetect2410.lib;opencv_ocl2410.lib;opencv_photo2410.lib;opencv_stitching2410.lib;opencv_superres2410.lib;opencv_ts2410.lib;opencv_video2410.lib;opencv_videostab2410.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\dev\opencv_2.4.10\build\x86\vc12\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_calib3d2410.lib;opencv_contrib2410.lib;opencv_core2410.lib;opencv_features2d2410.lib;opencv_flann2410.lib;opencv_gpu2410.lib;opencv_highgui2410.lib;opencv_imgproc2410.lib;opencv_legacy2410.lib;opencv_ml2410.lib;opencv_nonfree2410.lib;opencv_objdetect2410.lib;opencv_ocl2410.lib;opencv_photo2410.lib;opencv_stitching2410.lib;opencv_superres2410.lib;opencv_ts2410.lib;opencv_video2410.lib;opencv_videostab2410.lib;FlyCapture2.lib;FlyCapture2d.lib;FlyCapture2d_v100.lib;FlyCapture2d_v110.lib;FlyCapture2d_v90.lib;FlyCapture2GUI.lib;FlyCapture2GUId.lib;FlyCapture2GUId_v100.lib;FlyCapture2GUId_v110.lib;FlyCapture2GUId_v90.lib;FlyCapture2GUI_GTKmm.lib;FlyCapture2GUI_GTKmmd.lib;FlyCapture2GUI_GTKmmd_v100.lib;FlyCapture2GUI_GTKmmd_v90.lib;FlyCapture2GUI_GTKmm_v100.lib;FlyCapture2GUI_GTKmm_v90.lib;FlyCapture2GUI_v100.lib;FlyCapture2GUI_v110.lib;FlyCapture2GUI_v90.lib;FlyCapture2_v100.lib;FlyCapture2_v110.lib;FlyCapture2_v90.lib;PGRFlyCapture.lib;PGRFlyCaptureGUI.lib;PGRFlyCaptureGUI_v100.lib;PGRFlyCaptureGUI_v110.lib;PGRFlyCaptureGUI_v90.lib;PGRFlyCapture_v100.lib;PGRFlyCapture_v110.lib;PGRFlyCapture_v90.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\dev\opencv_2.4.10\build\x86\vc11\lib;C:\Program Files (x86)\Point Grey Research\FlyCapture2\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -138,17 +138,39 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CalibrateCamera.cpp" />
+    <ClCompile Include="Configurations.cpp" />
+    <ClCompile Include="FileUtility.cpp" />
+    <ClCompile Include="FlyCap.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainForm.cpp" />
+    <ClCompile Include="NewProjectForm.cpp" />
+    <ClCompile Include="RecordCamera.cpp" />
+    <ClCompile Include="StereoMatching.cpp" />
+    <ClCompile Include="Undistort.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CalibrateCamera.h" />
+    <ClInclude Include="Configurations.h" />
+    <ClInclude Include="FileUtility.h" />
+    <ClInclude Include="FlyCap.h" />
+    <ClInclude Include="Header.h" />
     <ClInclude Include="MainForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="NewProjectForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="RecordCamera.h" />
+    <ClInclude Include="StereoMatching.h" />
+    <ClInclude Include="Undistort.h" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.h</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewProjectForm.resx">
+      <DependentUpon>NewProjectForm.h</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
