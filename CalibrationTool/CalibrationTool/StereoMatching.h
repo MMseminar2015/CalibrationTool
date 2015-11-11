@@ -83,6 +83,8 @@ public:
 		vector<vector<Point3f>> ObjectPoints[2],
 		vector<vector<Point2f>> ImagePoints[2]);
 	bool DetectObjectPointsForStereoCamera(Mat *img);
+	bool CalibrateStereoCamera(vector<Mat*> imgs, vector<Mat*>& RimgPairList);
+
 	int MonoCalibrate(
 		vector<vector<Point3f>> objectPoints,
 		vector<vector<Point2f>> imagePoints,
