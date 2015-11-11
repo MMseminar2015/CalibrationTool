@@ -8,6 +8,12 @@ StereoMatching::StereoMatching()
 {
 }
 
+StereoMatching::StereoMatching(int boardwidth, int boardheight,float squaresize)
+{
+	StereoMatching::SetBoardSize(boardwidth, boardheight);
+	StereoMatching::SquareSize = squaresize;
+}
+
 StereoMatching::~StereoMatching()
 {
 }
@@ -759,32 +765,71 @@ int StereoMatching::StereoCalibrate2() {
 	return 1;
 }
 
-int StereoMatching::StereoCalibrate() {
+//int StereoMatching::StereoCalibrate() {
+//
+//	// チェッカーボードコーナー検出
+//	while (1) {
+//		Mat img1, img2;
+//		vector<Point3f> objectPoints;
+//		vector<Point2f> imagePoints[2];
+//		bool found =
+//			DetectObjectPointsForStereoCamera(
+//				img1, img2, ImageSize, BoardSize, SquareSize,
+//				objectPoints, imagePoints[0], imagePoints[1]);
+//		if (found) {
+//			ObjectPoints.push_back(objectPoints);
+//			for (int i = 0; i < 2; i++)
+//				ImagePoints[i].push_back(imagePoints[i]);
+//		}
+//	}
+//
+//	// 内部、外部パラメータの計算
+//	// 初期値(cameraMatrix,distCoeffs)を与える必要あり
+//	double rms =
+//		stereoCalibrate(
+//			ObjectPoints, ImagePoints[0], ImagePoints[1],
+//			CameraMatrix[0], DistCoeffs[0],
+//			CameraMatrix[1], DistCoeffs[1],
+//			ImageSize, R, T, E, F,
+//			TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 100, 1e-5),
+//			CALIB_FIX_INTRINSIC +
+//			//CALIB_FIX_PRINCIPAL_POINT +
+//			//CALIB_FIX_ASPECT_RATIO +
+//			//CALIB_ZERO_TANGENT_DIST +
+//			CALIB_USE_INTRINSIC_GUESS +
+//			//CALIB_SAME_FOCAL_LENGTH +
+//			//CALIB_RATIONAL_MODEL +
+//			//CALIB_FIX_K3 +
+//			//CALIB_FIX_K4 +
+//			//CALIB_FIX_K5 +
+//			//CALIB_FIX_K6 +
+//			0);
+//
+//	cv::stereoRectify(CameraMatrix[0], DistCoeffs[0],
+//		CameraMatrix[1], DistCoeffs[1],
+//		ImageSize, R, T, R1, R2, P1, P2, Q,
+//		CALIB_ZERO_DISPARITY
+//		+ 0,
+//		1, ImageSize, &ValidRoi[0], &ValidRoi[1]);
+//
+//	cv::initUndistortRectifyMap(CameraMatrix[0], DistCoeffs[0], R1, P1, ImageSize, CV_16SC2, Rmap[0][0], Rmap[0][1]);
+//	cv::initUndistortRectifyMap(CameraMatrix[1], DistCoeffs[1], R2, P2, ImageSize, CV_16SC2, Rmap[1][0], Rmap[1][1]);
+//
+//}
 
-	// チェッカーボードコーナー検出
-	while (1) {
-		Mat img1, img2;
-		vector<Point3f> objectPoints;
-		vector<Point2f> imagePoints[2];
-		bool found =
-			DetectObjectPointsForStereoCamera(
-				img1, img2, ImageSize, BoardSize, SquareSize,
-				objectPoints, imagePoints[0], imagePoints[1]);
-		if (found) {
-			ObjectPoints.push_back(objectPoints);
-			for (int i = 0; i < 2; i++)
-				ImagePoints[i].push_back(imagePoints[i]);
-		}
+double StereoMatching::StereoCalibrate() {
+
+	for (int i = 0; i < 2; i++)
+	{
+		Mat rvecs, tvecs;
+		cv::calibrateCamera(StereoMatching::ObjectPoints, StereoMatching::ImagePoints[i], StereoMatching::ImageSize, StereoMatching::CameraMatrix[i], StereoMatching::DistCoeffs[i], rvecs, tvecs);
 	}
-
-	// 内部、外部パラメータの計算
-	// 初期値(cameraMatrix,distCoeffs)を与える必要あり
 	double rms =
 		stereoCalibrate(
-			ObjectPoints, ImagePoints[0], ImagePoints[1],
-			CameraMatrix[0], DistCoeffs[0],
-			CameraMatrix[1], DistCoeffs[1],
-			ImageSize, R, T, E, F,
+			StereoMatching::ObjectPoints, StereoMatching::ImagePoints[0], StereoMatching::ImagePoints[1],
+			StereoMatching::CameraMatrix[0], StereoMatching::DistCoeffs[0],
+			StereoMatching::CameraMatrix[1], StereoMatching::DistCoeffs[1],
+			StereoMatching::ImageSize, StereoMatching::R, StereoMatching::T, StereoMatching::E, StereoMatching::F,
 			TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 100, 1e-5),
 			CALIB_FIX_INTRINSIC +
 			//CALIB_FIX_PRINCIPAL_POINT +
@@ -798,17 +843,19 @@ int StereoMatching::StereoCalibrate() {
 			//CALIB_FIX_K5 +
 			//CALIB_FIX_K6 +
 			0);
-
-	cv::stereoRectify(CameraMatrix[0], DistCoeffs[0],
-		CameraMatrix[1], DistCoeffs[1],
-		ImageSize, R, T, R1, R2, P1, P2, Q,
+	cv::stereoRectify(StereoMatching::CameraMatrix[0], StereoMatching::DistCoeffs[0],
+		StereoMatching::CameraMatrix[1], StereoMatching::DistCoeffs[1],
+		StereoMatching::ImageSize, StereoMatching::R, StereoMatching::T,
+		StereoMatching::R1, StereoMatching::R2, StereoMatching::P1, StereoMatching::P2, StereoMatching::Q,
 		CALIB_ZERO_DISPARITY
 		+ 0,
-		1, ImageSize, &ValidRoi[0], &ValidRoi[1]);
+		1, StereoMatching::ImageSize, &StereoMatching::ValidRoi[0], &StereoMatching::ValidRoi[1]);
 
-	cv::initUndistortRectifyMap(CameraMatrix[0], DistCoeffs[0], R1, P1, ImageSize, CV_16SC2, Rmap[0][0], Rmap[0][1]);
-	cv::initUndistortRectifyMap(CameraMatrix[1], DistCoeffs[1], R2, P2, ImageSize, CV_16SC2, Rmap[1][0], Rmap[1][1]);
-
+	cv::initUndistortRectifyMap(StereoMatching::CameraMatrix[0], StereoMatching::DistCoeffs[0], StereoMatching::R1, StereoMatching::P1,
+		StereoMatching::ImageSize, CV_16SC2, StereoMatching::Rmap[0][0], StereoMatching::Rmap[0][1]);
+	cv::initUndistortRectifyMap(StereoMatching::CameraMatrix[1], StereoMatching::DistCoeffs[1], StereoMatching::R2, StereoMatching::P2,
+		StereoMatching::ImageSize, CV_16SC2, StereoMatching::Rmap[1][0], StereoMatching::Rmap[1][1]);
+	return rms;
 }
 
 bool StereoMatching::DetectObjectPointsForStereoCamera2(
@@ -840,28 +887,19 @@ bool StereoMatching::DetectObjectPointsForStereoCamera2(
 		;
 }
 
-bool StereoMatching::DetectObjectPointsForStereoCamera(
-	Mat img1, Mat img2,
-	Size imgSize,
-	Size boardSize,		// チェッカーボードのサイズ
-	float squareSize,	// チェッカーボードのスクエアサイズ
-	vector<Point3f>& ObjectPoints,
-	vector<Point2f>& ImagePoints1, vector<Point2f>& ImagePoints2
-	)
+bool StereoMatching::DetectObjectPointsForStereoCamera(Mat *img)
 {
-	if (img1.size() != img2.size())
-		return false;
-
-	vector<Point3f> tempOP;
+	vector<Point3f> tempOP[2];
 	vector<Point2f> tempIP[2];
 	for (int i = 0; i < 2; i++) {
-		if (!DetectObjectPoints(img1, imgSize, boardSize, squareSize, tempOP, tempIP[i]))
+		if (!DetectObjectPoints(img[i], StereoMatching::ImageSize, StereoMatching::BoardSize, StereoMatching::SquareSize, tempOP[i], tempIP[i]))
 			return false;
 	}
 
-	ObjectPoints = tempOP;
-	ImagePoints1 = tempIP[0];
-	ImagePoints2 = tempIP[1];
+	StereoMatching::ObjectPoints.push_back(tempOP[0]);
+	StereoMatching::ImagePoints[0].push_back(tempIP[0]);
+	StereoMatching::ImagePoints[1].push_back(tempIP[1]);
+	return true;
 }
 
 int StereoMatching::StereoRectify(Mat img1, Mat img2, Mat& rimg1, Mat& rimg2) {

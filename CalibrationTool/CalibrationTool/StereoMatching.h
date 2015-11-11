@@ -45,6 +45,9 @@ public:
 
 	StereoMatching();
 	~StereoMatching();
+	StereoMatching::StereoMatching(int boardwidth, int boardheight, float squaresize);
+
+
 	int Matching(
 		string img1_filepatth, string imd2_filepath,
 		char* algorithm = "bm",
@@ -79,14 +82,7 @@ public:
 		float squareSize,	// チェッカーボードのスクエアサイズ
 		vector<vector<Point3f>> ObjectPoints[2],
 		vector<vector<Point2f>> ImagePoints[2]);
-	bool DetectObjectPointsForStereoCamera(
-		Mat img1, Mat img2,
-		Size imgSize,
-		Size boardSize,		// チェッカーボードのサイズ
-		float squareSize,	// チェッカーボードのスクエアサイズ
-		vector<Point3f>& ObjectPoints,
-		vector<Point2f>& ImagePoints1, vector<Point2f>& ImagePoints2);
-
+	bool DetectObjectPointsForStereoCamera(Mat *img);
 	int MonoCalibrate(
 		vector<vector<Point3f>> objectPoints,
 		vector<vector<Point2f>> imagePoints,
@@ -95,7 +91,7 @@ public:
 		vector<Mat>& rvecs, vector<Mat>& tvecs);
 
 	int StereoCalibrate2();
-	int StereoCalibrate();
+	double StereoCalibrate();
 
 	int StereoRectify(Mat img1, Mat img2, Mat& rimg1, Mat& rimg2);
 

@@ -3,6 +3,8 @@
 //#include <thread>
 #include "RecordCamera.h"
 #include "NewProjectForm.h"
+#include "StereoMatching.h"
+#include "Configurations.h"
 
 namespace CalibrationTool {
 
@@ -34,7 +36,9 @@ namespace CalibrationTool {
 	private: System::Windows::Forms::ToolStripMenuItem^  reprojectionErrorToolStripMenuItem;
 
 	private: bool recflg;
-	private: double fps;// = 1;
+			 double fps;// = 1;
+			 Configurations conf;
+	
 
 	public:
 		MainForm(void)
@@ -44,7 +48,9 @@ namespace CalibrationTool {
 			//
 			//TODO: ここにコンストラクター コードを追加します
 			//
-
+			conf.chess_height=7;
+			conf.chess_width=10;
+			conf.chess_size=16.8;
 
 		}
 
@@ -291,6 +297,7 @@ namespace CalibrationTool {
 			recthread->IsBackground = true;// バックグラウンド化してから起動
 			recthread->Start();
 			recflg = true;
+			//RecordThread();
 		}
 		else
 		{
@@ -313,7 +320,7 @@ namespace CalibrationTool {
 	private: delegate System::Void ProgressDelegate(int num);
 	private: System::Void Progress(int num);
 	  
-  
+  private: System::Void FindChessboardThread();
 
 private: System::Void newProjectToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
 	NewProjectForm ^fm = gcnew NewProjectForm();
