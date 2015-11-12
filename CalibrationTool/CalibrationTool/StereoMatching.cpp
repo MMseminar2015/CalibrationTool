@@ -1010,3 +1010,205 @@ bool StereoMatching::OutputRectifyParameter(std::string outputfile, Mat rmap0, M
 	}
 	return false;
 }
+
+double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std::vector<cv::Mat> rightvec)
+{
+	if (leftvec.size() != rightvec.size())//左右で画像数が違う場合
+		return -1.0;
+
+	std::vector<cv::Mat> grayvec[2];
+	for (int i = 0; i < leftvec.size(); i++) {
+		Mat leftimg;
+		cvtColor(leftvec[i], leftimg, CV_RGB2GRAY);
+		grayvec[0].push_back(leftimg);
+		Mat rightimg;
+		cvtColor(rightvec[i], rightimg, CV_RGB2GRAY);
+		grayvec[1].push_back(rightimg);
+	}
+
+
+	//
+	// チェッカーボード検出
+	//
+	vector<vector<Point2f>> imagePoints[2];
+	vector<vector<Point3f>> objectPoints;
+
+	int i, j, k, nimages = leftvec.size();
+
+	imagePoints[0].resize(nimages);
+	imagePoints[1].resize(nimages);
+
+	vector<int> goodindex;
+
+	for (i = j = 0; i < nimages; i++)
+	{
+		for (k = 0; k < 2; k++)
+		{
+			
+			Mat img = grayvec[k][i];
+
+
+			bool found = false;
+			vector<Point2f>& corners = imagePoints[k][j];
+
+			/* チェッカーボード検出 */
+			found = findChessboardCorners(img, BoardSize, corners,
+				CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE);
+
+
+			/* チェッカーボードが検出できなかった場合次の画像ペアを処理 */
+			if (!found)
+				break;
+
+			cornerSubPix(img, corners, Size(11, 11), Size(-1, -1),
+				TermCriteria(TermCriteria::COUNT + TermCriteria::EPS,
+					30, 0.01));
+		}
+		if (k == 2)
+		{
+			goodindex.push_back(i);
+			j++;
+		}
+	}
+
+	nimages = j;
+
+	//
+	// objectPoints検出
+	//
+	imagePoints[0].resize(nimages);
+	imagePoints[1].resize(nimages);
+	objectPoints.resize(nimages);
+
+	for (i = 0; i < nimages; i++)
+	{
+		for (j = 0; j < BoardSize.height; j++)
+			for (k = 0; k < BoardSize.width; k++)
+				objectPoints[i].push_back(Point3f(k*SquareSize, j*SquareSize, 0));
+	}
+
+	Mat cameraMatrix[2], distCoeffs[2];
+	cameraMatrix[0] = initCameraMatrix2D(objectPoints, imagePoints[0], ImageSize, 0);
+	cameraMatrix[1] = initCameraMatrix2D(objectPoints, imagePoints[1], ImageSize, 0);
+
+	Mat R, T, E, F;
+
+	//
+	// 左右のカメラの内部パラメータ計算
+	// 
+	vector<cv::Mat> newimagelist[2];
+	for (int i = 0; i < goodindex.size(); i += 2) {
+		newimagelist[0].push_back(grayvec[0][goodindex[i]]);
+		newimagelist[1].push_back(grayvec[1][goodindex[i]]);
+	}
+
+	CvMat
+		*intrisic[2] = { cvCreateMat(3, 3, CV_32FC1), cvCreateMat(3, 3, CV_32FC1) },
+		*dist[2] = { cvCreateMat(1, 4, CV_32FC1),cvCreateMat(1, 4, CV_32FC1) },
+		*kn = cvCreateMat(1, 3, CV_32FC1),
+		*ln = cvCreateMat(1, 3, CV_32FC1);
+	for (int i = 0; i < 2; i++) {
+		string filename = "camera";
+		filename += to_string(i) + ".xml";
+		CalibrateCamera::Calibrate_FromImages(newimagelist[i], filename, BoardSize.width,BoardSize.height,SquareSize, intrisic[i], kn, ln, dist[i]);
+		cameraMatrix[i] = intrisic[i];
+		distCoeffs[i] = dist[i];
+	}
+
+	//
+	// 内部、外部パラメータの計算
+	// 初期値(cameraMatrix,distCoeffs)を与える必要あり
+	//
+	double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
+		cameraMatrix[0], distCoeffs[0],
+		cameraMatrix[1], distCoeffs[1],
+		ImageSize, R, T, E, F,
+		TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 100, 1e-5),
+		CALIB_FIX_INTRINSIC +
+		//CALIB_FIX_PRINCIPAL_POINT +
+		//CALIB_FIX_ASPECT_RATIO +
+		//CALIB_ZERO_TANGENT_DIST +
+		CALIB_USE_INTRINSIC_GUESS +
+		//CALIB_SAME_FOCAL_LENGTH +
+		//CALIB_RATIONAL_MODEL +
+		//CALIB_FIX_K3 +
+		//CALIB_FIX_K4 +
+		//CALIB_FIX_K5 +
+		//CALIB_FIX_K6 +
+		0);
+
+	// (7)XMLファイルへの書き出し
+	FileStorage fs("extrinsic.xml", FileStorage::WRITE);
+	if (fs.isOpened()) {
+		write(fs, "rotation", R);
+		write(fs, "translation", T);
+		write(fs, "essential", E);
+		write(fs, "fundamental", F);
+		fs.release();
+	}
+
+	// CALIBRATION QUALITY CHECK
+	// because the output fundamental matrix implicitly
+	// includes all the output information,
+	// we can check the quality of calibration using the
+	// epipolar geometry constraint: m2^t*F*m1=0
+	double err = 0;
+	int npoints = 0;
+	vector<Vec3f> lines[2];
+	for (i = 0; i < nimages; i++)
+	{
+		int npt = (int)imagePoints[0][i].size();
+		Mat imgpt[2];
+		for (k = 0; k < 2; k++)
+		{
+			imgpt[k] = Mat(imagePoints[k][i]);
+			undistortPoints(imgpt[k], imgpt[k], cameraMatrix[k], distCoeffs[k], Mat(), cameraMatrix[k]);
+			computeCorrespondEpilines(imgpt[k], k + 1, F, lines[k]);
+		}
+		for (j = 0; j < npt; j++)
+		{
+			double errij = fabs(imagePoints[0][i][j].x*lines[1][j][0] +
+				imagePoints[0][i][j].y*lines[1][j][1] + lines[1][j][2]) +
+				fabs(imagePoints[1][i][j].x*lines[0][j][0] +
+					imagePoints[1][i][j].y*lines[0][j][1] + lines[0][j][2]);
+			err += errij;
+		}
+		npoints += npt;
+	}
+
+	// save intrinsic parameters
+	// カメラパラメータと歪みをyml形式で保存
+	FileStorage fs1("intrinsics.yml", FileStorage::WRITE);
+	if (fs1.isOpened())
+	{
+		fs1 << "M1" << cameraMatrix[0] << "D1" << distCoeffs[0] <<
+			"M2" << cameraMatrix[1] << "D2" << distCoeffs[1];
+		fs1.release();
+	}
+
+
+	Mat R1, R2, P1, P2, Q;
+	Rect validRoi[2];
+
+	cv::stereoRectify(cameraMatrix[0], distCoeffs[0],
+		cameraMatrix[1], distCoeffs[1],
+		ImageSize, R, T, R1, R2, P1, P2, Q,
+		CALIB_ZERO_DISPARITY
+		+ 0,
+		1, ImageSize, &validRoi[0], &validRoi[1]);
+
+	fs.open("extrinsics.yml", FileStorage::WRITE);
+	if (fs.isOpened())
+	{
+		fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;
+		fs.release();
+	}
+
+	//Mat rmap[2][2];
+
+	cv::initUndistortRectifyMap(cameraMatrix[0], distCoeffs[0], R1, P1, ImageSize, CV_16SC2, Rmap[0][0], Rmap[0][1]);
+	cv::initUndistortRectifyMap(cameraMatrix[1], distCoeffs[1], R2, P2, ImageSize, CV_16SC2, Rmap[1][0], Rmap[1][1]);
+
+
+	return rms;
+}

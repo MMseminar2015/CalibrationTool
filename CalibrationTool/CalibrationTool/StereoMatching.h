@@ -95,6 +95,8 @@ public:
 	int StereoCalibrate2();
 	double StereoCalibrate();
 
+	double StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std::vector<cv::Mat> rightvec);
+
 	int StereoRectify(Mat img1, Mat img2, Mat& rimg1, Mat& rimg2);
 
 	int SetImageSize(Mat img);

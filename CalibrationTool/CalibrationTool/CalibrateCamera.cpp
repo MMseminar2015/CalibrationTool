@@ -302,11 +302,167 @@ void CalibrateCamera::Calibrate_FromMat(
 	std::cout << "キャリブレーション終了しました。" << std::endl;
 
 }
+void CalibrateCamera::Calibrate_FromImages(
+	std::vector<cv::Mat> images,
+	std::string savefile,
+	int chess_width,
+	int chess_height,
+	int chess_square,
+	CvMat *intrinsic,
+	CvMat *rotation,
+	CvMat *translation,
+	CvMat *distortion,
+	int base){
+
+
+	/****************************************/
+	/* (1)キャリブレーション画像の読み込み  */
+	/****************************************/
+
+	//キャリブレーション用画像のリスト
+	std::vector<IplImage*> srcImg;
+
+	int IMAGE_NUM = images.size();
+
+
+	for (int i = 0; i < images.size(); i++)
+	{
+		IplImage tmp = images[i];
+		srcImg.push_back(&tmp);
+	}
+
+	/***************************************************************/
+	/* (3)チェスボード（キャリブレーションパターン）のコーナー検出 */
+	/***************************************************************/
+
+	int  PAT_SIZE = chess_width*chess_height;
+	//double  CHESS_SIZE = 24.0;      /* パターン1マスの1辺サイズ[mm] */
+	//double  CHESS_SIZE = 16.8;      /* パターン1マスの1辺サイズ[mm] */
+	int corner_count;
+
+	CvSize patternSize = cvSize(PAT_COL, PAT_ROW);
+
+	int foundNum = 0;
+	std::vector<CvPoint2D32f> allCorners = std::vector<CvPoint2D32f>();
+	//CvPoint2D32f *corners = new CvPoint2D32f[files.size()*PAT_SIZE];
+	//int* pCount=new int[IMAGE_NUM];
+	//cvNamedWindow("Calibration", CV_WINDOW_AUTOSIZE);
+
+	//std::vector<CvPoint2D32f> corners = std::vector<CvPoint2D32f>(files.size()*PAT_SIZE);
+	std::vector<int> pCount;
+	for (int i = 0; i < images.size(); i++)
+	{
+		std::vector<CvPoint2D32f> corners = std::vector<CvPoint2D32f>(PAT_SIZE);
+		int found = cvFindChessboardCorners(srcImg[i], patternSize, corners.data(), &corner_count);
+		if (found)
+		{
+			foundNum++;
+
+			/*************************************************/
+			/* (4)コーナー位置をサブピクセル精度に修正，描画 */
+			/*************************************************/
+
+			IplImage *srcGray = cvCreateImage(cvGetSize(srcImg[i]), IPL_DEPTH_8U, 1);
+			//cvCvtColor(srcImg[i], srcGray, CV_BGR2GRAY);
+			srcGray = srcImg[i];
+			cvFindCornerSubPix(srcGray, corners.data(), corner_count,
+				cvSize(3, 3), cvSize(-1, -1), cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03));
+			cvDrawChessboardCorners(srcImg[i], patternSize, corners.data(), corner_count, found);
+			pCount.push_back(corner_count);
+
+			allCorners.insert(allCorners.end(), corners.begin(), corners.end());
+		}
+
+
+		//cvShowImage("Calibration", srcImg[i]);
+		//cvWaitKey(100);
+
+		//allCorners.insert(allCorners.end(), corners.begin(), corners.end());
+	}
+
+	int allPoints = foundNum * PAT_SIZE;
+
+	//cvDestroyWindow("Calibration");
+
+	//CvPoint2D32f *corners = new CvPoint2D32f[allPoints]; 
+	CvMat imagePoints;
+	CvMat pointCounts;
+
+	//cvInitMatHeader(&imagePoints, allPoints, 1, CV_32FC2, corners.data);
+	//cvInitMatHeader(&pointCounts, foundNum, 1, CV_32SC1, pCount);
+
+	cvInitMatHeader(&imagePoints, allPoints, 1, CV_32FC2, allCorners.data());
+	cvInitMatHeader(&pointCounts, foundNum, 1, CV_32SC1, pCount.data());
+
+	/**************************/
+	/* (2)3次元空間座標の設定 */
+	/**************************/
+
+	CvPoint3D32f *objects = new CvPoint3D32f[allPoints];
+	for (int i = 0; i < foundNum; i++)
+	{
+		for (int j = 0; j < PAT_ROW; j++)
+		{
+			for (int k = 0; k < PAT_COL; k++)
+			{
+				objects[i * PAT_SIZE + j * PAT_COL + k].x = j * chess_square;
+				objects[i * PAT_SIZE + j * PAT_COL + k].y = k * chess_square;
+				objects[i * PAT_SIZE + j * PAT_COL + k].z = 0.0;
+			}
+		}
+	}
+
+	CvMat objectPoints;
+	cvInitMatHeader(&objectPoints, allPoints, 3, CV_32FC1, objects);
+
+
+
+	/*************************************/
+	/* (5)内部パラメータ，歪み係数の推定 */
+	//http://opencv.jp/opencv-2.1/cpp/camera_calibration_and_3d_reconstruction.html
+	/*************************************/
+
+	////内部パラメータ行列
+	////fx,fy:焦点距離（ピクセル単位） cx,cy:主点（通常は画像中心）スキューs=0,アスペクト比a=1と仮定
+	////[fx 0 cx]
+	////[0 fy cy]
+	////[0 0 1]
+	//intrinsic = cvCreateMat(3, 3, CV_32FC1);
+
+	////回転ベクトル
+	////ロドリゲスの回転公式参照
+	////ベクトルの方向：回転軸　ベクトルの長さ：回転量
+	//rotation = cvCreateMat(1, 3, CV_32FC1);
+
+	////並進ベクトル
+	//translation = cvCreateMat(1, 3, CV_32FC1);
+
+	////歪み係数ベクトル
+	//distortion = cvCreateMat(1, 4, CV_32FC1);
+
+	cvCalibrateCamera2(&objectPoints, &imagePoints, &pointCounts, cvSize(srcImg[0]->width, srcImg[0]->height), intrinsic, distortion);
+
+	// (6)外部パラメータの推定
+	CvMat sub_image_points, sub_object_points;
+
+	cvGetRows(&imagePoints, &sub_image_points, base * PAT_SIZE, (base + 1) * PAT_SIZE);
+	cvGetRows(&objectPoints, &sub_object_points, base * PAT_SIZE, (base + 1) * PAT_SIZE);
+	cvFindExtrinsicCameraParams2(&sub_object_points, &sub_image_points, intrinsic, distortion, rotation, translation);
+
+	// (7)XMLファイルへの書き出し
+	CvFileStorage *fs;
+	fs = cvOpenFileStorage(savefile.c_str(), 0, CV_STORAGE_WRITE);
+	cvWrite(fs, "intrinsic", intrinsic);
+	cvWrite(fs, "rotation", rotation);
+	cvWrite(fs, "translation", translation);
+	cvWrite(fs, "distortion", distortion);
+	cvReleaseFileStorage(&fs);
+
+}
 
 
 void CalibrateCamera::Calibrate_FromDir_Prototype(std::string imgdirpath)
 {
-	std::cout << "キャリブレーションを開始します。" << std::endl;
 
 	const int IMAGE_NUM = 135;           // 画像数
 	int PAT_ROW = 7;              // パターンの行数 
@@ -324,7 +480,6 @@ void CalibrateCamera::Calibrate_FromDir_Prototype(std::string imgdirpath)
 	std::vector<IplImage*> srcImg;
 	std::vector<std::string> files = FileUtility::GetFilesFromDirectory(imgdirpath, "*");
 
-	std::cout << "画像読み込み中..." << std::endl;
 
 	for (int i = 0; i < files.size(); i++)
 	{
@@ -347,10 +502,7 @@ void CalibrateCamera::Calibrate_FromDir_Prototype(std::string imgdirpath)
 		{
 			foundNum++;
 		}
-		else
-		{
-			std::cout << files[i] + " is invalid" << std::endl;
-		}
+
 		/*************************************************/
 		/* (4)コーナー位置をサブピクセル精度に修正，描画 */
 		/*************************************************/
@@ -431,7 +583,6 @@ void CalibrateCamera::Calibrate_FromDir_Prototype(std::string imgdirpath)
 		delete(img);
 	}
 
-	std::cout << "キャリブレーション終了しました。" << std::endl;
 
 }
 

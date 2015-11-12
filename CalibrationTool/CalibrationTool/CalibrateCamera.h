@@ -38,6 +38,18 @@ public:
 		CvMat *distortion,
 		int base = 0);
 
+	static void Calibrate_FromImages(
+		std::vector<cv::Mat> images,
+		std::string savefile,
+		int chess_width,
+		int chess_height,
+		int chess_square,
+		CvMat *intrinsic,
+		CvMat *rotation,
+		CvMat *translation,
+		CvMat *distortion,
+		int base = 0);
+
 	static void StereoCalibrate(std::string undimgdir);
 
 	static void CalibrateCamera::CalcExtrinsicParams(

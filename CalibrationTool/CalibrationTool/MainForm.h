@@ -139,7 +139,7 @@ namespace CalibrationTool {
 			});
 			this->menuStrip1->Location = System::Drawing::Point(0, 0);
 			this->menuStrip1->Name = L"menuStrip1";
-			this->menuStrip1->Size = System::Drawing::Size(1309, 24);
+			this->menuStrip1->Size = System::Drawing::Size(1283, 24);
 			this->menuStrip1->TabIndex = 0;
 			this->menuStrip1->Text = L"menuStrip1";
 			// 
@@ -217,7 +217,7 @@ namespace CalibrationTool {
 			// 
 			// pictureBox1
 			// 
-			this->pictureBox1->Location = System::Drawing::Point(3, 3);
+			this->pictureBox1->Location = System::Drawing::Point(0, 0);
 			this->pictureBox1->Name = L"pictureBox1";
 			this->pictureBox1->Size = System::Drawing::Size(640, 480);
 			this->pictureBox1->TabIndex = 1;
@@ -225,7 +225,7 @@ namespace CalibrationTool {
 			// 
 			// pictureBox2
 			// 
-			this->pictureBox2->Location = System::Drawing::Point(649, 3);
+			this->pictureBox2->Location = System::Drawing::Point(640, 0);
 			this->pictureBox2->Name = L"pictureBox2";
 			this->pictureBox2->Size = System::Drawing::Size(640, 480);
 			this->pictureBox2->TabIndex = 2;
@@ -233,7 +233,7 @@ namespace CalibrationTool {
 			// 
 			// button_record
 			// 
-			this->button_record->Location = System::Drawing::Point(1214, 489);
+			this->button_record->Location = System::Drawing::Point(1202, 1);
 			this->button_record->Name = L"button_record";
 			this->button_record->Size = System::Drawing::Size(75, 23);
 			this->button_record->TabIndex = 3;
@@ -243,18 +243,18 @@ namespace CalibrationTool {
 			// 
 			// panel1
 			// 
+			this->panel1->Controls->Add(this->progressBar1);
 			this->panel1->Controls->Add(this->pictureBox1);
 			this->panel1->Controls->Add(this->pictureBox2);
-			this->panel1->Controls->Add(this->button_record);
-			this->panel1->Location = System::Drawing::Point(12, 27);
+			this->panel1->Location = System::Drawing::Point(0, 25);
 			this->panel1->Name = L"panel1";
-			this->panel1->Size = System::Drawing::Size(1294, 545);
+			this->panel1->Size = System::Drawing::Size(1280, 480);
 			this->panel1->TabIndex = 4;
 			// 
 			// MessageLabel
 			// 
 			this->MessageLabel->AutoSize = true;
-			this->MessageLabel->Location = System::Drawing::Point(3, 618);
+			this->MessageLabel->Location = System::Drawing::Point(10, 508);
 			this->MessageLabel->Name = L"MessageLabel";
 			this->MessageLabel->Size = System::Drawing::Size(50, 12);
 			this->MessageLabel->TabIndex = 5;
@@ -262,9 +262,9 @@ namespace CalibrationTool {
 			// 
 			// progressBar1
 			// 
-			this->progressBar1->Location = System::Drawing::Point(15, 592);
+			this->progressBar1->Location = System::Drawing::Point(12, 440);
 			this->progressBar1->Name = L"progressBar1";
-			this->progressBar1->Size = System::Drawing::Size(1291, 23);
+			this->progressBar1->Size = System::Drawing::Size(1259, 23);
 			this->progressBar1->TabIndex = 6;
 			this->progressBar1->Visible = false;
 			// 
@@ -272,9 +272,9 @@ namespace CalibrationTool {
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 12);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(1309, 636);
-			this->Controls->Add(this->progressBar1);
+			this->ClientSize = System::Drawing::Size(1283, 531);
 			this->Controls->Add(this->MessageLabel);
+			this->Controls->Add(this->button_record);
 			this->Controls->Add(this->panel1);
 			this->Controls->Add(this->menuStrip1);
 			this->MainMenuStrip = this->menuStrip1;
@@ -304,7 +304,7 @@ namespace CalibrationTool {
 			button_record->Text = "Record";
 			recflg = false;
 
-			WriteImages();
+			//WriteImages();
 
 			MainForm::progressBar1->Visible = true;
 
