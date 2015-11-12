@@ -29,7 +29,6 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	
 	int count = 0;
 
-
 	////表示window
 	//namedWindow("Camera_0", CV_WINDOW_AUTOSIZE);
 	//namedWindow("Camera_1", CV_WINDOW_AUTOSIZE);
@@ -41,42 +40,28 @@ System::Void CalibrationTool::MainForm::RecordThread()
 		//Thread::Sleep(100);
 		//rec.Recording(pic);
 		fly.GetImages(pic);
-		////画面に出力
-		//for (unsigned int i = 0; i < fly.numCams; i++)
-		//{
-		//	string window_name = "Camera_" + to_string(i);
-		//	cv::imshow(window_name, pic[i]);
-		//}
-		////撮影終了判定
-		//int key = cv::waitKey(20);
-		//if (key != -1)
-		//{
-		//	cvDestroyAllWindows();
-		//	break;
-		//}
-		//for (int i = 0; i < 2; i++) {
-			// 画面を更新
-			BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
-			//Display();
-		//}
-		//count++;
+		// 画面を更新
+		BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
+		//Display();
 
-		//if (CalibrationTool::MainForm::recflg)
-		//{
-		//	//if (count > fps * 30) 
-		//	{
-		//		//if (size != pic[0].size()) {
-		//		//	size = pic[0].size();
-		//		//	stereo.SetImageSize(pic[0]);
-		//		//}
-		//		//Thread^ th = gcnew Thread(gcnew ThreadStart(this, &MainForm::FindChessboardThread));
-		//		//th->IsBackground = true;
-		//		//th->Start();
-		//		count = 0;
-		//		//CalibrationTool::MainForm::FindChessboardThread();
-		//	}
-		//}
-		//else { count = 0; }
+		count++;
+
+		if (CalibrationTool::MainForm::recflg)
+		{
+			if (count > fps * 30) 
+			{
+				//if (size != pic[0].size()) {
+				//	size = pic[0].size();
+				//	stereo.SetImageSize(pic[0]);
+				//}
+				//Thread^ th = gcnew Thread(gcnew ThreadStart(this, &MainForm::FindChessboardThread));
+				//th->IsBackground = true;
+				//th->Start();
+				count = 0;
+				//CalibrationTool::MainForm::FindChessboardThread();
+			}
+		}
+		else { count = 0; }
 	}
 }
 

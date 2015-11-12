@@ -902,6 +902,22 @@ bool StereoMatching::DetectObjectPointsForStereoCamera(Mat *img)
 	return true;
 }
 
+bool StereoMatching::CalibrateStereoCamera(vector<Mat*> imgPairList, vector<Mat*>& RimgPairList) {
+	for (int i = 0; i < imgPairList.size(); i++) {
+		for (int j = 0; j < 2; j++) {
+			bool found = DetectObjectPointsForStereoCamera(imgPairList[i]);
+		}
+	}
+	double rms = StereoCalibrate();
+
+	for (int i = 0; i < imgPairList.size(); i++) {
+		Mat rimg[2];
+		StereoRectify(imgPairList[i][0], imgPairList[i][1], rimg[0], rimg[1]);
+		RimgPairList.push_back(rimg);
+	}
+	return true;
+}
+
 int StereoMatching::StereoRectify(Mat img1, Mat img2, Mat& rimg1, Mat& rimg2) {
 
 	remap(img1, rimg1, Rmap[0][0], Rmap[0][1], INTER_LINEAR);
