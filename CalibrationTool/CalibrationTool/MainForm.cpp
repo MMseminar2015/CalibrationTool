@@ -9,6 +9,8 @@
 //#include <thread>
 
 cv::Mat pic[2];
+std::vector<cv::Mat> leftvec;
+std::vector<cv::Mat> rightvec;
 StereoMatching stereo;
 System::Void FindChessboardThread();
 int imgcount = 0;
@@ -50,6 +52,8 @@ System::Void CalibrationTool::MainForm::RecordThread()
 		{
 			if (count > fps * 30) 
 			{
+				leftvec.push_back(pic[0].clone());
+				rightvec.push_back(pic[1].clone());
 				//if (size != pic[0].size()) {
 				//	size = pic[0].size();
 				//	stereo.SetImageSize(pic[0]);
@@ -108,4 +112,14 @@ System::Void CalibrationTool::MainForm::Progress(int num)
 	MainForm::progressBar1->Value = num;
 }
 
-
+void CalibrationTool::MainForm::WriteImages() {
+	std::string dir = "";
+	for (int i = 0; i < leftvec.size(); i++) {
+		std::string file = std::to_string(i) + "_left.bmp";
+		cv::imwrite(file, leftvec[i]);
+	}
+	for (int i = 0; i < rightvec.size(); i++) {
+		std::string file = std::to_string(i) + "_right.bmp";
+		cv::imwrite(file, rightvec[i]);
+	}
+}

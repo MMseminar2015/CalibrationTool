@@ -304,6 +304,8 @@ namespace CalibrationTool {
 			button_record->Text = "Record";
 			recflg = false;
 
+			WriteImages();
+
 			MainForm::progressBar1->Visible = true;
 
 			Thread^ calbt = gcnew Thread(gcnew ThreadStart(this, &MainForm::CalibrateThread));
@@ -312,6 +314,8 @@ namespace CalibrationTool {
 		}
 
 	}
+	private: void WriteImages();
+
 	private: System::Void RecordThread();
 	private: delegate System::Void DisplayDelegate();
 	private: System::Void Display();
