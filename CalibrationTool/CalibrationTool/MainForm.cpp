@@ -56,8 +56,8 @@ System::Void CalibrationTool::MainForm::RecordThread()
 		//}
 		//for (int i = 0; i < 2; i++) {
 			// ‰æ–Ê‚ðXV
-			//BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
-			Display();
+			BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
+			//Display();
 		//}
 		//count++;
 
