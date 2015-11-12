@@ -293,11 +293,11 @@ namespace CalibrationTool {
 	private: System::Void button_record_Click(System::Object^  sender, System::EventArgs^  e) {
 		if (button_record->Text != "Stop") {
 			button_record->Text = "Stop";
-			//recthread = gcnew Thread(gcnew ThreadStart(this, &MainForm::RecordThread));
-			//recthread->IsBackground = true;// バックグラウンド化してから起動
-			//recthread->Start();
+			recthread = gcnew Thread(gcnew ThreadStart(this, &MainForm::RecordThread));
+			recthread->IsBackground = true;// バックグラウンド化してから起動
+			recthread->Start();
 			recflg = true;
-			RecordThread();
+			//RecordThread();
 		}
 		else
 		{
