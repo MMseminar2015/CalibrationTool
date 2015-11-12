@@ -30,7 +30,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	stereo = StereoMatching(MainForm::conf.chess_width, MainForm::conf.chess_height, MainForm::conf.chess_size);
 	
 
-	//FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30);
+	FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30);
 	
 	int count = 0;
 
@@ -41,10 +41,10 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	while (1) {
 
 		//cv::Mat pic[2];
-		RecordCamera rec;
-		Thread::Sleep(100);
-		rec.Recording(pic);
-		//fly.GetImages(pic);
+		//RecordCamera rec;
+		//Thread::Sleep(100);
+		//rec.Recording(pic);
+		fly.GetImages(pic);
 		// ‰æ–Ê‚ðXV
 		BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
 		//Display();
@@ -53,7 +53,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 
 		if (CalibrationTool::MainForm::recflg)
 		{
-			//if (count > fps * 30) 
+			if (count > fps * 30) 
 			{
 				leftvec.push_back(pic[0].clone());
 				rightvec.push_back(pic[1].clone());
@@ -64,7 +64,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 				//Thread^ th = gcnew Thread(gcnew ThreadStart(this, &MainForm::FindChessboardThread));
 				//th->IsBackground = true;
 				//th->Start();
-				count = 0;
+				count = 0; imgcount++;
 				//CalibrationTool::MainForm::FindChessboardThread();
 				finishcalib = false;
 			}
