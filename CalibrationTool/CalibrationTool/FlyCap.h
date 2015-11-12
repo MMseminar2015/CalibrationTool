@@ -1,11 +1,17 @@
 #pragma once
+
+#include "FlyCapture2.h"
 #include "opencv2/highgui/highgui.hpp"
 
-class FlyCap {
+
+class FlyCap
+{
 public:
-	FlyCap();
+	FlyCap(FlyCapture2::VideoMode vm = FlyCapture2::VideoMode::VIDEOMODE_320x240YUV422, FlyCapture2::FrameRate fr = FlyCapture2::FrameRate::FRAMERATE_30);
 	~FlyCap();
 
-	int GetImages(cv::Mat *images);
+	void GetImages(cv::Mat *images);
 
+	unsigned int numCams;
 };
+

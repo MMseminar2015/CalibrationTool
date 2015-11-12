@@ -1,5 +1,6 @@
 #include "MainForm.h"
 #include "FlyCap.h"
+#include "FlyCapture2.h"
 #include "StereoMatching.h"
 #include "opencv2\opencv.hpp"
 #include <Windows.h>
@@ -21,9 +22,17 @@ System::Void CalibrationTool::MainForm::RecordThread()
 {
 	cv::Size size;
 	int a = MainForm::conf.chess_width;
-	stereo=StereoMatching(MainForm::conf.chess_width, MainForm::conf.chess_height, MainForm::conf.chess_size);
-	FlyCap fly;
+	stereo = StereoMatching(MainForm::conf.chess_width, MainForm::conf.chess_height, MainForm::conf.chess_size);
+	
+
+	FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30);
+	
 	int count = 0;
+
+
+	////表示window
+	//namedWindow("Camera_0", CV_WINDOW_AUTOSIZE);
+	//namedWindow("Camera_1", CV_WINDOW_AUTOSIZE);
 
 	while (1) {
 
@@ -32,28 +41,42 @@ System::Void CalibrationTool::MainForm::RecordThread()
 		//Thread::Sleep(100);
 		//rec.Recording(pic);
 		fly.GetImages(pic);
-		for (int i = 0; i < 2; i++) {
+		////画面に出力
+		//for (unsigned int i = 0; i < fly.numCams; i++)
+		//{
+		//	string window_name = "Camera_" + to_string(i);
+		//	cv::imshow(window_name, pic[i]);
+		//}
+		////撮影終了判定
+		//int key = cv::waitKey(20);
+		//if (key != -1)
+		//{
+		//	cvDestroyAllWindows();
+		//	break;
+		//}
+		//for (int i = 0; i < 2; i++) {
 			// 画面を更新
-			BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
-		}
-		count++;
+			//BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
+			Display();
+		//}
+		//count++;
 
-		if (CalibrationTool::MainForm::recflg)
-		{
-			//if (count > fps * 30) 
-			{
-				if (size != pic[0].size()) {
-					size = pic[0].size();
-					stereo.SetImageSize(pic[0]);
-				}
-				//Thread^ th = gcnew Thread(gcnew ThreadStart(this, &MainForm::FindChessboardThread));
-				//th->IsBackground = true;
-				//th->Start();
-				count = 0;
-				//CalibrationTool::MainForm::FindChessboardThread();
-			}
-		}
-		else { count = 0; }
+		//if (CalibrationTool::MainForm::recflg)
+		//{
+		//	//if (count > fps * 30) 
+		//	{
+		//		//if (size != pic[0].size()) {
+		//		//	size = pic[0].size();
+		//		//	stereo.SetImageSize(pic[0]);
+		//		//}
+		//		//Thread^ th = gcnew Thread(gcnew ThreadStart(this, &MainForm::FindChessboardThread));
+		//		//th->IsBackground = true;
+		//		//th->Start();
+		//		count = 0;
+		//		//CalibrationTool::MainForm::FindChessboardThread();
+		//	}
+		//}
+		//else { count = 0; }
 	}
 }
 
@@ -74,11 +97,13 @@ System::Void CalibrationTool::MainForm::Display()
 		//pictureBox1->Refresh();
 		//delete g;
 		pictureBox1->Image = bmp;
+		pictureBox1->Refresh();
 	}
 	{
 		Bitmap^ bmp = gcnew Bitmap(pic[1].cols, pic[1].rows, pic[1].step,
 			System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(pic[1].data));
 		pictureBox2->Image = bmp;
+		pictureBox2->Refresh();
 	}
 	MessageLabel->Text = imgcount.ToString();
 }
