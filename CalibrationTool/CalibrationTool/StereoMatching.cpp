@@ -1250,7 +1250,7 @@ double StereoMatching::StereoCalibrate_bySugimoto(std::vector<cv::Mat> leftvec, 
 	CalibrateCamera::Calibrate_FromImages(leftvec, "leftcamera.xml",
 		BoardSize.width, BoardSize.height, SquareSize,	intrinsicl, rotationl, translationl, distortionl);
 	std::vector<cv::Mat> undLeftvec;
-	Undistort::Undistortion(leftvec, undLeftvec, intrinsicl, distortionl);
+	//Undistort::Undistortion(leftvec, undLeftvec, intrinsicl, distortionl);
 
 
 	CvMat *intrinsicr = cvCreateMat(3, 3, CV_32FC1);
@@ -1260,7 +1260,7 @@ double StereoMatching::StereoCalibrate_bySugimoto(std::vector<cv::Mat> leftvec, 
 	CalibrateCamera::Calibrate_FromImages(rightvec, "rightcamera.xml", 
 		BoardSize.width, BoardSize.height, SquareSize, intrinsicr, rotationr, translationr, distortionr);
 	std::vector<cv::Mat> undRightvec;
-	Undistort::Undistortion(rightvec, undRightvec, intrinsicr, distortionr);
+	//Undistort::Undistortion(rightvec, undRightvec, intrinsicr, distortionr);
 
 
 	vector<vector<Point3f> > object_points;

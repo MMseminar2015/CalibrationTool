@@ -30,7 +30,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	stereo = StereoMatching(MainForm::conf.chess_width, MainForm::conf.chess_height, MainForm::conf.chess_size);
 	
 
-	//FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30);
+	FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30);
 	
 	int count = 0;
 
@@ -41,17 +41,17 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	while (1) {
 
 		//cv::Mat pic[2];
-		RecordCamera rec;
-		Thread::Sleep(100);
-		rec.Recording(pic);
-		//fly.GetImages(pic);
+		//RecordCamera rec;
+		//Thread::Sleep(100);
+		//rec.Recording(pic);
+		fly.GetImages(pic);
 
 
 		count++;
 
 		if (CalibrationTool::MainForm::recflg)
 		{
-			//if (count > fps * 30) 
+			if (count > fps * 30) 
 			{
 				leftvec.push_back(pic[0].clone());
 				//cv::imshow("Camera_0", pic[0]);
