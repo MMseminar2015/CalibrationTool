@@ -1,6 +1,7 @@
 #include "StereoMatching.h"
 #include "FileUtility.h"
 #include "CalibrateCamera.h"
+#include "Undistort.h"
 
 using namespace std;
 
@@ -924,8 +925,11 @@ int StereoMatching::StereoRectify(Mat img1, Mat img2, Mat& rimg1, Mat& rimg2) {
 	//Mat img1_gray, img2_gray;
 	//cvtColor(img1, img1_gray, CV_RGB2GRAY);
 	//cvtColor(img2, img2_gray, CV_RGB2GRAY);
-	remap(img1, rimg1, Rmap[0][0], Rmap[0][1], INTER_LINEAR);
-	remap(img2, rimg2, Rmap[1][0], Rmap[1][1], INTER_LINEAR);
+	Mat unimg1 = Undistort::Undistortion(img1, CameraMatrix[0], DistCoeffs[0]);
+	Mat unimg2 = Undistort::Undistortion(img2, CameraMatrix[1], DistCoeffs[1]);
+
+	remap(unimg1, rimg1, Rmap[0][0], Rmap[0][1], INTER_LINEAR);
+	remap(unimg2, rimg2, Rmap[1][0], Rmap[1][1], INTER_LINEAR);
 	return 1;
 }
 
@@ -1030,6 +1034,23 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 		grayvec[1].push_back(rightimg);
 	}
 
+	std::vector<cv::Mat> ungrayvec[2];
+
+	CvMat
+		*intrisic[2] = { cvCreateMat(3, 3, CV_32FC1), cvCreateMat(3, 3, CV_32FC1) },
+		*dist[2] = { cvCreateMat(1, 4, CV_32FC1),cvCreateMat(1, 4, CV_32FC1) },
+		*kn = cvCreateMat(1, 3, CV_32FC1),
+		*ln = cvCreateMat(1, 3, CV_32FC1);
+	for (int i = 0; i < 2; i++) {
+		string filename = "camera";
+		filename += to_string(i) + ".xml";
+		CalibrateCamera::Calibrate_FromImages(grayvec[i], filename, BoardSize.width, BoardSize.height, SquareSize, intrisic[i], kn, ln, dist[i]);
+		ungrayvec[i]=Undistort::Undistortion(grayvec[i], intrisic[i], dist[i]);
+		CameraMatrix[i] = intrisic[i];
+		DistCoeffs[i] = dist[i];
+
+		progress += 10;
+	}
 
 	//
 	// チェッカーボード検出
@@ -1049,7 +1070,7 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 		for (k = 0; k < 2; k++)
 		{
 			
-			Mat img = grayvec[k][i];
+			Mat img = ungrayvec[k][i];
 
 
 			bool found = false;
@@ -1073,7 +1094,7 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 			goodindex.push_back(i);
 			j++;
 		}
-		progress = i * 50 / nimages;
+		progress += 50 / nimages;
 	}
 	//progress += 10;
 
@@ -1104,23 +1125,8 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 	// 
 	vector<cv::Mat> newimagelist[2];
 	for (int i = 0; i < goodindex.size(); i++) {
-		newimagelist[0].push_back(grayvec[0][goodindex[i]]);
-		newimagelist[1].push_back(grayvec[1][goodindex[i]]);
-	}
-
-	CvMat
-		*intrisic[2] = { cvCreateMat(3, 3, CV_32FC1), cvCreateMat(3, 3, CV_32FC1) },
-		*dist[2] = { cvCreateMat(1, 4, CV_32FC1),cvCreateMat(1, 4, CV_32FC1) },
-		*kn = cvCreateMat(1, 3, CV_32FC1),
-		*ln = cvCreateMat(1, 3, CV_32FC1);
-	for (int i = 0; i < 2; i++) {
-		string filename = "camera";
-		filename += to_string(i) + ".xml";
-		CalibrateCamera::Calibrate_FromImages(newimagelist[i], filename, BoardSize.width,BoardSize.height,SquareSize, intrisic[i], kn, ln, dist[i]);
-		cameraMatrix[i] = intrisic[i];
-		distCoeffs[i] = dist[i];
-
-		progress += 10;
+		newimagelist[0].push_back(ungrayvec[0][goodindex[i]]);
+		newimagelist[1].push_back(ungrayvec[1][goodindex[i]]);
 	}
 
 	//
@@ -1131,19 +1137,21 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 		cameraMatrix[0], distCoeffs[0],
 		cameraMatrix[1], distCoeffs[1],
 		ImageSize, R, T, E, F,
-		TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 100, 1e-5),
-		CALIB_FIX_INTRINSIC +
-		//CALIB_FIX_PRINCIPAL_POINT +
-		//CALIB_FIX_ASPECT_RATIO +
-		//CALIB_ZERO_TANGENT_DIST +
-		CALIB_USE_INTRINSIC_GUESS +
-		//CALIB_SAME_FOCAL_LENGTH +
-		//CALIB_RATIONAL_MODEL +
-		//CALIB_FIX_K3 +
-		//CALIB_FIX_K4 +
-		//CALIB_FIX_K5 +
-		//CALIB_FIX_K6 +
-		0);
+		cvTermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 100, 1e-5),
+		CV_CALIB_SAME_FOCAL_LENGTH | CV_CALIB_ZERO_TANGENT_DIST);
+		//TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 100, 1e-5),
+		//CALIB_FIX_INTRINSIC +
+		////CALIB_FIX_PRINCIPAL_POINT +
+		////CALIB_FIX_ASPECT_RATIO +
+		////CALIB_ZERO_TANGENT_DIST +
+		//CALIB_USE_INTRINSIC_GUESS +
+		////CALIB_SAME_FOCAL_LENGTH +
+		////CALIB_RATIONAL_MODEL +
+		////CALIB_FIX_K3 +
+		////CALIB_FIX_K4 +
+		////CALIB_FIX_K5 +
+		////CALIB_FIX_K6 +
+		//0);
 
 	// (7)XMLファイルへの書き出し
 	FileStorage fs("extrinsic.xml", FileStorage::WRITE);

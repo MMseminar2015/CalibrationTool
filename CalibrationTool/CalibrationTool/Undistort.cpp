@@ -38,3 +38,31 @@ void Undistort::Undistortion(std::vector<std::string> files, cv::Mat cameraMatri
 		cv::imwrite(savedir + FileUtility::AddSuffix(FileUtility::GetFileName(files[i]), "_und"), undistImg[i]);
 	}
 }
+
+std::vector<cv::Mat> Undistort::Undistortion(std::vector<cv::Mat> srcimg, cv::Mat cameraMatrix, cv::Mat distCoeffs) {
+
+	cv::Size imageSize;
+	imageSize = srcimg[0].size();
+	// òcÇ›ï‚ê≥
+
+	std::vector<cv::Mat> undistImg;
+	for (int i = 0; i < srcimg.size(); i++) {
+
+		undistImg.push_back(cv::Mat(imageSize, CV_8UC1));
+		cv::undistort(srcimg[i], undistImg[i], cameraMatrix, distCoeffs);
+	}
+	return undistImg;
+}
+
+cv::Mat Undistort::Undistortion(cv::Mat srcimg, cv::Mat cameraMatrix, cv::Mat distCoeffs) {
+	cv::Size imageSize;
+	imageSize = srcimg.size();
+	// òcÇ›ï‚ê≥
+
+	cv::Mat undistImg;
+
+	undistImg = cv::Mat(imageSize, CV_8UC1);
+	cv::undistort(srcimg, undistImg, cameraMatrix, distCoeffs);
+
+	return undistImg;
+}
