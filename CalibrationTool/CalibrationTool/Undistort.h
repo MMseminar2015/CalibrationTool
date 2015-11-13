@@ -14,4 +14,5 @@ class Undistort
 {
 public:
 	static void Undistortion(std::vector<std::string> files, cv::Mat cameraMatrix, cv::Mat distCoeffs);
+	static void Undistortion(std::vector<cv::Mat> images, std::vector<cv::Mat> undImages, cv::Mat cameraMatrix, cv::Mat distCoeffs);
 };

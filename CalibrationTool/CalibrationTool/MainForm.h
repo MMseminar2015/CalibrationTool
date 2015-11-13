@@ -78,17 +78,6 @@ namespace CalibrationTool {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 	private: System::Windows::Forms::MenuStrip^  menuStrip1;
 	protected:
 	private: System::Windows::Forms::ToolStripMenuItem^  fileToolStripMenuItem;

@@ -54,6 +54,8 @@ System::Void CalibrationTool::MainForm::RecordThread()
 			if (count > fps * 30) 
 			{
 				leftvec.push_back(pic[0].clone());
+				//cv::imshow("Camera_0", pic[0]);
+				//cv::waitKey(1);
 				rightvec.push_back(pic[1].clone());
 				if (size != pic[0].size()) {
 					size = pic[0].size();
@@ -141,6 +143,7 @@ System::Void CalibrationTool::MainForm::CalibrateThread()
 	th->Start();
 
 	rms =stereo.StereoCalibrate_byOhara(leftvec,rightvec);
+	//rms =stereo.StereoCalibrate_bySugimoto(leftvec,rightvec);
 	finishcalib = true;
 	//for (int i = 0; i < 100; i++) {
 	//	Thread::Sleep(100);
