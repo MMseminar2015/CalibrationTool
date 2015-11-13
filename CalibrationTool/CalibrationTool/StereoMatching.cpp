@@ -1103,7 +1103,7 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 	// 左右のカメラの内部パラメータ計算
 	// 
 	vector<cv::Mat> newimagelist[2];
-	for (int i = 0; i < goodindex.size(); i += 2) {
+	for (int i = 0; i < goodindex.size(); i++) {
 		newimagelist[0].push_back(grayvec[0][goodindex[i]]);
 		newimagelist[1].push_back(grayvec[1][goodindex[i]]);
 	}
