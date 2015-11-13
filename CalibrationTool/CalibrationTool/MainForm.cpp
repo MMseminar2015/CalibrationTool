@@ -30,7 +30,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	stereo = StereoMatching(MainForm::conf.chess_width, MainForm::conf.chess_height, MainForm::conf.chess_size);
 	
 
-	FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30);
+	//FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30);
 	
 	int count = 0;
 
@@ -41,26 +41,24 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	while (1) {
 
 		//cv::Mat pic[2];
-		//RecordCamera rec;
-		//Thread::Sleep(100);
-		//rec.Recording(pic);
-		fly.GetImages(pic);
-		// 画面を更新
-		BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
-		//Display();
+		RecordCamera rec;
+		Thread::Sleep(100);
+		rec.Recording(pic);
+		//fly.GetImages(pic);
+
 
 		count++;
 
 		if (CalibrationTool::MainForm::recflg)
 		{
-			if (count > fps * 30) 
+			//if (count > fps * 30) 
 			{
 				leftvec.push_back(pic[0].clone());
 				rightvec.push_back(pic[1].clone());
-				//if (size != pic[0].size()) {
-				//	size = pic[0].size();
-				//	stereo.SetImageSize(pic[0]);
-				//}
+				if (size != pic[0].size()) {
+					size = pic[0].size();
+					stereo.SetImageSize(pic[0]);
+				}
 				//Thread^ th = gcnew Thread(gcnew ThreadStart(this, &MainForm::FindChessboardThread));
 				//th->IsBackground = true;
 				//th->Start();
@@ -73,10 +71,17 @@ System::Void CalibrationTool::MainForm::RecordThread()
 			if (finishcalib) 
 			{
 				stereo.StereoRectify(pic[0], pic[1], rectified[0], rectified[1]);
+				cv::imshow("1", rectified[0]);
+				cv::imshow("2", rectified[1]);
+				cv::waitKey(1);
 			}
 			
 			count = 0; 
 		}
+
+		// 画面を更新
+		BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
+		//Display();
 	}
 }
 
@@ -89,7 +94,8 @@ System::Void CalibrationTool::MainForm::FindChessboardThread()
 
 System::Void CalibrationTool::MainForm::Display()
 {
-	if (!finishcalib) {
+	if (!finishcalib) 
+	{
 		{
 			//Graphics^g = Graphics::FromImage(pictureBox1->Image);
 			Bitmap^ bmp = gcnew Bitmap(pic[0].cols, pic[0].rows, pic[0].step,
@@ -109,6 +115,8 @@ System::Void CalibrationTool::MainForm::Display()
 	}
 	else {
 		{
+			//cv::Mat img;
+			//cvtColor(rectified[0], img, CV_GRAY2RGB);
 			Bitmap^ bmp = gcnew Bitmap(rectified[0].cols, rectified[0].rows, rectified[0].step,
 				System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(rectified[0].data));
 			pictureBox1->Image = bmp;
@@ -127,6 +135,10 @@ System::Void CalibrationTool::MainForm::Display()
 
 System::Void CalibrationTool::MainForm::CalibrateThread()
 {
+	Thread^ th = gcnew Thread(gcnew ThreadStart(this, &MainForm::ProgressThread));
+	th->IsBackground = true;
+	th->Start();
+
 	rms =stereo.StereoCalibrate_byOhara(leftvec,rightvec);
 	finishcalib = true;
 	//for (int i = 0; i < 100; i++) {
@@ -140,7 +152,28 @@ System::Void CalibrationTool::MainForm::CalibrateThread()
 System::Void CalibrationTool::MainForm::Progress(int num)
 {
 	MainForm::progressBar1->Value = num;
-	MessageLabel->Text = "RSM="+ rms.ToString();
+	if(rms>0)
+		MessageLabel->Text = "RSM="+ rms.ToString();
+}
+
+System::Void CalibrationTool::MainForm::ProgressEnd(int num)
+{
+	MainForm::progressBar1->Value = 100;
+	MainForm::progressBar1->Visible = false;
+}
+
+System::Void CalibrationTool::MainForm::ProgressThread() {
+
+	while(1) {
+		Thread::Sleep(1000);
+		// 進捗状況として画面を更新
+		BeginInvoke(gcnew ProgressDelegate(this, &MainForm::Progress),stereo.progress);
+		if (finishcalib) {
+			BeginInvoke(gcnew ProgressDelegate(this, &MainForm::ProgressEnd), 0);
+			break;
+		}
+	}
+
 }
 
 void CalibrationTool::MainForm::WriteImages() {

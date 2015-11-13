@@ -42,6 +42,7 @@ public:
 	vector<vector<Point3f>> MonoObjectPoints[2];
 	vector<vector<Point2f>> MonoImagePoints[2];
 
+	int progress;
 
 	StereoMatching();
 	~StereoMatching();

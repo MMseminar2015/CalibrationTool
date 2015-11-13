@@ -52,6 +52,11 @@ namespace CalibrationTool {
 			conf.chess_width=10;
 			conf.chess_size=16.8;
 
+			recthread = gcnew Thread(gcnew ThreadStart(this, &MainForm::RecordThread));
+			recthread->IsBackground = true;// バックグラウンド化してから起動
+			recthread->Start();
+			recflg = false;
+
 		}
 
 	protected:
@@ -293,9 +298,9 @@ namespace CalibrationTool {
 	private: System::Void button_record_Click(System::Object^  sender, System::EventArgs^  e) {
 		if (button_record->Text != "Stop") {
 			button_record->Text = "Stop";
-			recthread = gcnew Thread(gcnew ThreadStart(this, &MainForm::RecordThread));
-			recthread->IsBackground = true;// バックグラウンド化してから起動
-			recthread->Start();
+			//recthread = gcnew Thread(gcnew ThreadStart(this, &MainForm::RecordThread));
+			//recthread->IsBackground = true;// バックグラウンド化してから起動
+			//recthread->Start();
 			recflg = true;
 			//RecordThread();
 		}
@@ -321,8 +326,11 @@ namespace CalibrationTool {
 	private: System::Void Display();
 
 	private: System::Void CalibrateThread();
+
+	private: System::Void ProgressThread();
 	private: delegate System::Void ProgressDelegate(int num);
 	private: System::Void Progress(int num);
+	private: System::Void ProgressEnd(int num);
 	  
   private: System::Void FindChessboardThread();
 

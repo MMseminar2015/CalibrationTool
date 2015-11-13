@@ -12,6 +12,7 @@ StereoMatching::StereoMatching(int boardwidth, int boardheight,float squaresize)
 {
 	StereoMatching::SetBoardSize(boardwidth, boardheight);
 	StereoMatching::SquareSize = squaresize;
+	progress = 0;
 }
 
 StereoMatching::~StereoMatching()
@@ -920,6 +921,9 @@ bool StereoMatching::CalibrateStereoCamera(vector<Mat*> imgPairList, vector<Mat*
 
 int StereoMatching::StereoRectify(Mat img1, Mat img2, Mat& rimg1, Mat& rimg2) {
 
+	//Mat img1_gray, img2_gray;
+	//cvtColor(img1, img1_gray, CV_RGB2GRAY);
+	//cvtColor(img2, img2_gray, CV_RGB2GRAY);
 	remap(img1, rimg1, Rmap[0][0], Rmap[0][1], INTER_LINEAR);
 	remap(img2, rimg2, Rmap[1][0], Rmap[1][1], INTER_LINEAR);
 	return 1;
@@ -1069,7 +1073,9 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 			goodindex.push_back(i);
 			j++;
 		}
+		progress = i * 50 / nimages;
 	}
+	//progress += 10;
 
 	nimages = j;
 
@@ -1113,6 +1119,8 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 		CalibrateCamera::Calibrate_FromImages(newimagelist[i], filename, BoardSize.width,BoardSize.height,SquareSize, intrisic[i], kn, ln, dist[i]);
 		cameraMatrix[i] = intrisic[i];
 		distCoeffs[i] = dist[i];
+
+		progress += 10;
 	}
 
 	//
@@ -1175,7 +1183,7 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 		}
 		npoints += npt;
 	}
-
+	progress += 10;
 	// save intrinsic parameters
 	// カメラパラメータと歪みをyml形式で保存
 	FileStorage fs1("intrinsics.yml", FileStorage::WRITE);
@@ -1197,18 +1205,24 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 		+ 0,
 		1, ImageSize, &validRoi[0], &validRoi[1]);
 
-	fs.open("extrinsics.yml", FileStorage::WRITE);
-	if (fs.isOpened())
-	{
-		fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;
-		fs.release();
-	}
+	progress += 10;
+
 
 	//Mat rmap[2][2];
 
 	cv::initUndistortRectifyMap(cameraMatrix[0], distCoeffs[0], R1, P1, ImageSize, CV_16SC2, Rmap[0][0], Rmap[0][1]);
 	cv::initUndistortRectifyMap(cameraMatrix[1], distCoeffs[1], R2, P2, ImageSize, CV_16SC2, Rmap[1][0], Rmap[1][1]);
 
+	progress += 10;
+
+	//Mat tmp = Rmap[0][0];
+
+	fs.open("extrinsics.yml", FileStorage::WRITE);
+	if (fs.isOpened())
+	{
+		fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;// << "rmap" << rmap[0][0];// << "Rmap[0][1]" << Rmap[0][1] << "Rmap[1][0]" << Rmap[1][0] << "Rmap[1][1]" << Rmap[1][1];
+		fs.release();
+	}
 
 	return rms;
 }
