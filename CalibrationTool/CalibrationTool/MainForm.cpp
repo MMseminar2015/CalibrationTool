@@ -30,13 +30,13 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	stereo = StereoMatching(MainForm::conf.chess_width, MainForm::conf.chess_height, MainForm::conf.chess_size);
 	
 
-	FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30);
+	FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30, 30);
 	
 	int count = 0;
 
 	////•\Ž¦window
-	//namedWindow("Camera_0", CV_WINDOW_AUTOSIZE);
-	//namedWindow("Camera_1", CV_WINDOW_AUTOSIZE);
+	//namedWindow("1", CV_WINDOW_AUTOSIZE);
+	//namedWindow("2", CV_WINDOW_AUTOSIZE);
 
 	while (1) {
 
@@ -70,14 +70,14 @@ System::Void CalibrationTool::MainForm::RecordThread()
 			}
 		}
 		else { 
-			if (finishcalib) 
+			if (finishcalib)
 			{
 				stereo.StereoRectify(pic[0], pic[1], rectified[0], rectified[1]);
-				//cv::imshow("1", rectified[0]);
-				//cv::imshow("2", rectified[1]);
+				//cv::imshow("1", pic[0]);
+				//cv::imshow("2", pic[1]);
 				//cv::waitKey(1);
 			}
-			
+
 			count = 0; 
 		}
 
@@ -143,7 +143,6 @@ System::Void CalibrationTool::MainForm::CalibrateThread()
 	th->Start();
 
 	rms =stereo.StereoCalibrate_byOhara(leftvec,rightvec);
-	//rms =stereo.StereoCalibrate_bySugimoto(leftvec,rightvec);
 	finishcalib = true;
 	//for (int i = 0; i < 100; i++) {
 	//	Thread::Sleep(100);

@@ -10,7 +10,6 @@ using namespace std;
 using namespace cv;
 
 
-unsigned int numCams = 2;
 FlyCapture2::Camera** ppCams;
 FlyCapture2::Image cam_image[2], rgb_image[2];
 cv::Mat cv_image[2];
@@ -18,10 +17,11 @@ FlyCapture2::Error fcerror;
 
 
 
-FlyCap::FlyCap(FlyCapture2::VideoMode vm, FlyCapture2::FrameRate fr)
+FlyCap::FlyCap(FlyCapture2::VideoMode vm, FlyCapture2::FrameRate fr, float fps)
 {
 	//カメラの入れ物
 	ppCams = new FlyCapture2::Camera*[numCams];
+	FlyCapture2::Camera();
 
 	//取得する動画サイズ(モード)とフレームレート設定
 	FlyCapture2::VideoMode vMode = vm;
@@ -43,14 +43,31 @@ FlyCap::FlyCap(FlyCapture2::VideoMode vm, FlyCapture2::FrameRate fr)
 		if (fcerror != PGRERROR_OK) exit(1);
 		fcerror = ppCams[i]->Connect(&guid);
 		if (fcerror != PGRERROR_OK) exit(1);
-		//動画サイズ(モード)とフレームレート設定
+		//動画サイズ(モード)とフレームレート(Max値？)設定
 		fcerror = ppCams[i]->SetVideoModeAndFrameRate(vMode, fRate);
 		if (fcerror != PGRERROR_OK) exit(1);
+		//fps設定
+		FlyCapture2::Property prop;
+		prop.type = FlyCapture2::PropertyType::FRAME_RATE;
+		prop.absControl = true;
+		prop.onePush = false;
+		prop.onOff = true;
+		prop.autoManualMode = false;
+		prop.absValue = fps;
+		ppCams[i]->SetProperty(&prop);
 	}
 
 	//カメラから画像の転送を開始
 	fcerror = Camera::StartSyncCapture(numCams, (const Camera**)ppCams);
 	if (fcerror != PGRERROR_OK) exit(1);
+
+	//バッファ内の最新データを取り出すように設定(start)
+	for (unsigned int i = 0; i < numCams; i++)
+	{
+		FC2Config conf;
+		conf.grabMode = GrabMode::DROP_FRAMES;
+		ppCams[i]->SetConfiguration(&conf);
+	}
 }
 
 

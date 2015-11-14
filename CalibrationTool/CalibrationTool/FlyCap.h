@@ -7,7 +7,7 @@
 class FlyCap
 {
 public:
-	FlyCap(FlyCapture2::VideoMode vm = FlyCapture2::VideoMode::VIDEOMODE_320x240YUV422, FlyCapture2::FrameRate fr = FlyCapture2::FrameRate::FRAMERATE_30);
+	FlyCap(FlyCapture2::VideoMode vm = FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate fr = FlyCapture2::FrameRate::FRAMERATE_30, float fps = 30.00);
 	~FlyCap();
 
 	void GetImages(cv::Mat *images);
