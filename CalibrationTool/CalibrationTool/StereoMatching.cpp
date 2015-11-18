@@ -268,6 +268,47 @@ int StereoMatching::Matching(
 
 }
 
+int StereoMatching::Matching(
+	Mat &img1, Mat &img2, Mat &disp8)
+{
+
+	enum { STEREO_BM = 0, STEREO_SGBM = 1, STEREO_HH = 2, STEREO_VAR = 3 };
+	int alg = STEREO_SGBM;
+
+	//StereoBM bm;
+	StereoSGBM sgbm;
+	//StereoVar var;
+
+	Size img_size = img1.size();
+
+	Rect roi1, roi2;
+	Mat Q;
+
+	int numberOfDisparities = ((img_size.width / 8) + 15) & -16;
+
+	sgbm.preFilterCap = 63;
+	sgbm.SADWindowSize = 3;
+
+	int cn = img1.channels();
+
+	sgbm.P1 = 8 * cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+	sgbm.P2 = 32 * cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+	sgbm.minDisparity = 0;
+	sgbm.numberOfDisparities = numberOfDisparities;
+	sgbm.uniquenessRatio = 10;
+	sgbm.speckleWindowSize = 100;
+	sgbm.speckleRange = 32;
+	sgbm.disp12MaxDiff = 1;
+	sgbm.fullDP = alg == STEREO_HH;
+
+	Mat disp;
+	sgbm(img1, img2, disp);
+
+	disp.convertTo(disp8, CV_8U, 255 / (numberOfDisparities*16.));
+
+	return 0;
+}
+
 void StereoMatching::StereoCalibrate(const vector<string>& imagelist, Size boardSize, bool displayCorners, bool useCalibrated, bool showRectified)
 {
 	//

@@ -60,6 +60,10 @@ public:
 		char* extrinsicfilename = 0,
 		char* disparityfilename = 0,
 		char* pointcloud_filename = 0);
+
+	int Matching(
+		Mat &img1, Mat &img2, Mat &disp8);
+
 	static void StereoCalibrate(
 		const vector<string>& imagelist,
 		Size boardSize,
