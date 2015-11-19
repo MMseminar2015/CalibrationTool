@@ -36,8 +36,11 @@ namespace CalibrationTool {
 	private: System::Windows::Forms::ToolStripMenuItem^  reprojectionErrorToolStripMenuItem;
 
 	private: bool recflg;
+			 bool refreshflg;//画面を更新するかどうか
 			 double fps;// = 1;
 	private: System::Windows::Forms::CheckBox^  checkBox1;
+	private: System::Windows::Forms::ToolStripMenuItem^  lineToolStripMenuItem;//ラインを描画するかどうか
+	private: System::Windows::Forms::ToolStripMenuItem^  rectifiedToolStripMenuItem;
 			 Configurations conf;
 	
 
@@ -57,6 +60,7 @@ namespace CalibrationTool {
 			recthread->IsBackground = true;// バックグラウンド化してから起動
 			recthread->Start();
 			recflg = false;
+			refreshflg = true;
 
 		}
 
@@ -113,6 +117,7 @@ namespace CalibrationTool {
 			this->numberToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->distributionToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->reprojectionErrorToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->lineToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->stereoToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			this->pictureBox2 = (gcnew System::Windows::Forms::PictureBox());
@@ -121,6 +126,7 @@ namespace CalibrationTool {
 			this->progressBar1 = (gcnew System::Windows::Forms::ProgressBar());
 			this->MessageLabel = (gcnew System::Windows::Forms::Label());
 			this->checkBox1 = (gcnew System::Windows::Forms::CheckBox());
+			this->rectifiedToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->menuStrip1->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox2))->BeginInit();
@@ -136,8 +142,7 @@ namespace CalibrationTool {
 			});
 			this->menuStrip1->Location = System::Drawing::Point(0, 0);
 			this->menuStrip1->Name = L"menuStrip1";
-			this->menuStrip1->Padding = System::Windows::Forms::Padding(10, 3, 0, 3);
-			this->menuStrip1->Size = System::Drawing::Size(2138, 33);
+			this->menuStrip1->Size = System::Drawing::Size(1280, 24);
 			this->menuStrip1->TabIndex = 0;
 			this->menuStrip1->Text = L"menuStrip1";
 			// 
@@ -148,33 +153,36 @@ namespace CalibrationTool {
 					this->openProjectToolStripMenuItem, this->saveToolStripMenuItem
 			});
 			this->fileToolStripMenuItem->Name = L"fileToolStripMenuItem";
-			this->fileToolStripMenuItem->Size = System::Drawing::Size(52, 27);
+			this->fileToolStripMenuItem->Size = System::Drawing::Size(39, 20);
 			this->fileToolStripMenuItem->Text = L"File";
 			// 
 			// newProjectToolStripMenuItem
 			// 
 			this->newProjectToolStripMenuItem->Name = L"newProjectToolStripMenuItem";
-			this->newProjectToolStripMenuItem->Size = System::Drawing::Size(206, 30);
+			this->newProjectToolStripMenuItem->Size = System::Drawing::Size(149, 22);
 			this->newProjectToolStripMenuItem->Text = L"New Project";
 			this->newProjectToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainForm::newProjectToolStripMenuItem_Click);
 			// 
 			// openProjectToolStripMenuItem
 			// 
 			this->openProjectToolStripMenuItem->Name = L"openProjectToolStripMenuItem";
-			this->openProjectToolStripMenuItem->Size = System::Drawing::Size(206, 30);
+			this->openProjectToolStripMenuItem->Size = System::Drawing::Size(149, 22);
 			this->openProjectToolStripMenuItem->Text = L"Open Project";
 			// 
 			// saveToolStripMenuItem
 			// 
 			this->saveToolStripMenuItem->Name = L"saveToolStripMenuItem";
-			this->saveToolStripMenuItem->Size = System::Drawing::Size(206, 30);
+			this->saveToolStripMenuItem->Size = System::Drawing::Size(149, 22);
 			this->saveToolStripMenuItem->Text = L"Save";
 			// 
 			// calibrationToolStripMenuItem
 			// 
-			this->calibrationToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->conditionToolStripMenuItem });
+			this->calibrationToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {
+				this->conditionToolStripMenuItem,
+					this->lineToolStripMenuItem, this->rectifiedToolStripMenuItem
+			});
 			this->calibrationToolStripMenuItem->Name = L"calibrationToolStripMenuItem";
-			this->calibrationToolStripMenuItem->Size = System::Drawing::Size(116, 27);
+			this->calibrationToolStripMenuItem->Size = System::Drawing::Size(81, 20);
 			this->calibrationToolStripMenuItem->Text = L"Calibration";
 			// 
 			// conditionToolStripMenuItem
@@ -184,7 +192,7 @@ namespace CalibrationTool {
 					this->distributionToolStripMenuItem, this->reprojectionErrorToolStripMenuItem
 			});
 			this->conditionToolStripMenuItem->Name = L"conditionToolStripMenuItem";
-			this->conditionToolStripMenuItem->Size = System::Drawing::Size(177, 30);
+			this->conditionToolStripMenuItem->Size = System::Drawing::Size(152, 22);
 			this->conditionToolStripMenuItem->Text = L"Condition";
 			// 
 			// numberToolStripMenuItem
@@ -192,51 +200,57 @@ namespace CalibrationTool {
 			this->numberToolStripMenuItem->Checked = true;
 			this->numberToolStripMenuItem->CheckState = System::Windows::Forms::CheckState::Checked;
 			this->numberToolStripMenuItem->Name = L"numberToolStripMenuItem";
-			this->numberToolStripMenuItem->Size = System::Drawing::Size(255, 30);
+			this->numberToolStripMenuItem->Size = System::Drawing::Size(184, 22);
 			this->numberToolStripMenuItem->Text = L"Number of Images";
 			// 
 			// distributionToolStripMenuItem
 			// 
 			this->distributionToolStripMenuItem->Name = L"distributionToolStripMenuItem";
-			this->distributionToolStripMenuItem->Size = System::Drawing::Size(255, 30);
+			this->distributionToolStripMenuItem->Size = System::Drawing::Size(184, 22);
 			this->distributionToolStripMenuItem->Text = L"Distribution";
 			// 
 			// reprojectionErrorToolStripMenuItem
 			// 
 			this->reprojectionErrorToolStripMenuItem->Name = L"reprojectionErrorToolStripMenuItem";
-			this->reprojectionErrorToolStripMenuItem->Size = System::Drawing::Size(255, 30);
+			this->reprojectionErrorToolStripMenuItem->Size = System::Drawing::Size(184, 22);
 			this->reprojectionErrorToolStripMenuItem->Text = L"Reprojection Error";
+			// 
+			// lineToolStripMenuItem
+			// 
+			this->lineToolStripMenuItem->CheckOnClick = true;
+			this->lineToolStripMenuItem->Name = L"lineToolStripMenuItem";
+			this->lineToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->lineToolStripMenuItem->Text = L"Line";
 			// 
 			// stereoToolStripMenuItem
 			// 
 			this->stereoToolStripMenuItem->Name = L"stereoToolStripMenuItem";
-			this->stereoToolStripMenuItem->Size = System::Drawing::Size(163, 27);
+			this->stereoToolStripMenuItem->Size = System::Drawing::Size(114, 20);
 			this->stereoToolStripMenuItem->Text = L"Stereo Matching";
 			// 
 			// pictureBox1
 			// 
 			this->pictureBox1->Location = System::Drawing::Point(0, 0);
-			this->pictureBox1->Margin = System::Windows::Forms::Padding(5, 4, 5, 4);
 			this->pictureBox1->Name = L"pictureBox1";
-			this->pictureBox1->Size = System::Drawing::Size(1067, 720);
+			this->pictureBox1->Size = System::Drawing::Size(640, 480);
 			this->pictureBox1->TabIndex = 1;
 			this->pictureBox1->TabStop = false;
+			this->pictureBox1->Click += gcnew System::EventHandler(this, &MainForm::pictureBox_Click);
 			// 
 			// pictureBox2
 			// 
-			this->pictureBox2->Location = System::Drawing::Point(1067, 0);
-			this->pictureBox2->Margin = System::Windows::Forms::Padding(5, 4, 5, 4);
+			this->pictureBox2->Location = System::Drawing::Point(640, 0);
 			this->pictureBox2->Name = L"pictureBox2";
-			this->pictureBox2->Size = System::Drawing::Size(1067, 720);
+			this->pictureBox2->Size = System::Drawing::Size(640, 480);
 			this->pictureBox2->TabIndex = 2;
 			this->pictureBox2->TabStop = false;
+			this->pictureBox2->Click += gcnew System::EventHandler(this, &MainForm::pictureBox_Click);
 			// 
 			// button_record
 			// 
-			this->button_record->Location = System::Drawing::Point(2003, 2);
-			this->button_record->Margin = System::Windows::Forms::Padding(5, 4, 5, 4);
+			this->button_record->Location = System::Drawing::Point(1202, 1);
 			this->button_record->Name = L"button_record";
-			this->button_record->Size = System::Drawing::Size(125, 34);
+			this->button_record->Size = System::Drawing::Size(75, 23);
 			this->button_record->TabIndex = 3;
 			this->button_record->Text = L"Record";
 			this->button_record->UseVisualStyleBackColor = true;
@@ -247,54 +261,59 @@ namespace CalibrationTool {
 			this->panel1->Controls->Add(this->progressBar1);
 			this->panel1->Controls->Add(this->pictureBox1);
 			this->panel1->Controls->Add(this->pictureBox2);
-			this->panel1->Location = System::Drawing::Point(0, 38);
-			this->panel1->Margin = System::Windows::Forms::Padding(5, 4, 5, 4);
+			this->panel1->Location = System::Drawing::Point(0, 25);
 			this->panel1->Name = L"panel1";
-			this->panel1->Size = System::Drawing::Size(2133, 720);
+			this->panel1->Size = System::Drawing::Size(1280, 480);
 			this->panel1->TabIndex = 4;
 			// 
 			// progressBar1
 			// 
-			this->progressBar1->Location = System::Drawing::Point(20, 660);
-			this->progressBar1->Margin = System::Windows::Forms::Padding(5, 4, 5, 4);
+			this->progressBar1->Location = System::Drawing::Point(12, 440);
 			this->progressBar1->Name = L"progressBar1";
-			this->progressBar1->Size = System::Drawing::Size(2098, 34);
+			this->progressBar1->Size = System::Drawing::Size(1259, 23);
 			this->progressBar1->TabIndex = 6;
 			this->progressBar1->Visible = false;
 			// 
 			// MessageLabel
 			// 
 			this->MessageLabel->AutoSize = true;
-			this->MessageLabel->Location = System::Drawing::Point(17, 762);
-			this->MessageLabel->Margin = System::Windows::Forms::Padding(5, 0, 5, 0);
+			this->MessageLabel->Location = System::Drawing::Point(10, 508);
 			this->MessageLabel->Name = L"MessageLabel";
-			this->MessageLabel->Size = System::Drawing::Size(72, 18);
+			this->MessageLabel->Size = System::Drawing::Size(50, 12);
 			this->MessageLabel->TabIndex = 5;
 			this->MessageLabel->Text = L"message";
 			// 
 			// checkBox1
 			// 
 			this->checkBox1->AutoSize = true;
-			this->checkBox1->Location = System::Drawing::Point(1821, 9);
+			this->checkBox1->Location = System::Drawing::Point(1093, 6);
+			this->checkBox1->Margin = System::Windows::Forms::Padding(2);
 			this->checkBox1->Name = L"checkBox1";
-			this->checkBox1->Size = System::Drawing::Size(77, 22);
+			this->checkBox1->Size = System::Drawing::Size(54, 16);
 			this->checkBox1->TabIndex = 6;
 			this->checkBox1->Text = L"effect";
 			this->checkBox1->UseVisualStyleBackColor = true;
 			// 
+			// rectifiedToolStripMenuItem
+			// 
+			this->rectifiedToolStripMenuItem->CheckOnClick = true;
+			this->rectifiedToolStripMenuItem->Name = L"rectifiedToolStripMenuItem";
+			this->rectifiedToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->rectifiedToolStripMenuItem->Text = L"Rectified";
+			// 
 			// MainForm
 			// 
-			this->AutoScaleDimensions = System::Drawing::SizeF(10, 18);
+			this->AutoScaleDimensions = System::Drawing::SizeF(6, 12);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(2138, 796);
+			this->ClientSize = System::Drawing::Size(1280, 523);
 			this->Controls->Add(this->checkBox1);
 			this->Controls->Add(this->MessageLabel);
 			this->Controls->Add(this->button_record);
 			this->Controls->Add(this->panel1);
 			this->Controls->Add(this->menuStrip1);
 			this->MainMenuStrip = this->menuStrip1;
-			this->Margin = System::Windows::Forms::Padding(5, 4, 5, 4);
 			this->Name = L"MainForm";
+			this->RightToLeft = System::Windows::Forms::RightToLeft::No;
 			this->Text = L"MainForm";
 			this->menuStrip1->ResumeLayout(false);
 			this->menuStrip1->PerformLayout();
@@ -344,11 +363,18 @@ namespace CalibrationTool {
 	private: System::Void ProgressEnd(int num);
 	  
   private: System::Void FindChessboardThread();
+		   private: bool Stop();
 
 private: System::Void newProjectToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
 	NewProjectForm ^fm = gcnew NewProjectForm();
 	fm->ShowDialog();
 	MessageLabel->Text = fm->GetSaveDirectory();
+}
+private: System::Void pictureBox_Click(System::Object^  sender, System::EventArgs^  e) {
+	if (refreshflg)
+		refreshflg = false;
+	else
+		refreshflg = true;
 }
 };
 }

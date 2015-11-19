@@ -30,7 +30,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	stereo = StereoMatching(MainForm::conf.chess_width, MainForm::conf.chess_height, MainForm::conf.chess_size);
 	
 
-	FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30, 30);
+	//FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30, 30);
 	
 	int count = 0;
 
@@ -40,18 +40,19 @@ System::Void CalibrationTool::MainForm::RecordThread()
 
 	while (1) {
 
+
 		//cv::Mat pic[2];
-		//RecordCamera rec;
-		//Thread::Sleep(100);
-		//rec.Recording(pic);
-		fly.GetImages(pic);
+		RecordCamera rec;
+		Thread::Sleep(100);
+		rec.Recording(pic);
+		//fly.GetImages(pic);
 
 
 		count++;
 
 		if (CalibrationTool::MainForm::recflg)
 		{
-			if (count > fps * 30) 
+			//if (count > fps * 30) 
 			{
 				leftvec.push_back(pic[0].clone());
 				//cv::imshow("Camera_0", pic[0]);
@@ -96,44 +97,101 @@ System::Void CalibrationTool::MainForm::FindChessboardThread()
 
 System::Void CalibrationTool::MainForm::Display()
 {
-	if (!finishcalib) 
+	if (!refreshflg)//‰æ–Ê‚ðXV‚µ‚È‚¢
+		return;
+
+	int linenum = 20;
+	if (!finishcalib || !rectifiedToolStripMenuItem->Checked)
 	{
 		{
-			//Graphics^g = Graphics::FromImage(pictureBox1->Image);
+			PictureBox^ pb = pictureBox1;
+
 			Bitmap^ bmp = gcnew Bitmap(pic[0].cols, pic[0].rows, pic[0].step,
 				System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(pic[0].data));
-			//g->DrawImage(bmp, 0, 0, pic[0].cols, pic[0].rows);
-			//pictureBox1->Refresh();
-			//delete g;
-			pictureBox1->Image = bmp;
-			pictureBox1->Refresh();
+
+			if (lineToolStripMenuItem->Checked)
+			{
+				Graphics^g = Graphics::FromImage(bmp);
+				SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
+				Pen^ pen = gcnew Pen(brush, 1);
+				for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
+					g->DrawLine(pen, 0, y, bmp->Width, y);//ƒ‰ƒCƒ“‚Ì•`‰æ
+				}
+			}
+
+			pb->Image = bmp;
+			pb->Refresh();
 		}
 		{
+
+			PictureBox^ pb = pictureBox2;
+
 			Bitmap^ bmp = gcnew Bitmap(pic[1].cols, pic[1].rows, pic[1].step,
 				System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(pic[1].data));
-			pictureBox2->Image = bmp;
-			pictureBox2->Refresh();
+
+			if (lineToolStripMenuItem->Checked)
+			{
+				Graphics^g = Graphics::FromImage(bmp);
+				SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
+				Pen^ pen = gcnew Pen(brush, 1);
+				for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
+					g->DrawLine(pen, 0, y, bmp->Width, y);
+				}
+			}
+
+			pb->Image = bmp;
+			pb->Refresh();
 		}
-		MessageLabel->Text = imgcount.ToString();
+
 	}
 	else {
+
 		{
-			//cv::Mat img;
-			//cvtColor(rectified[0], img, CV_GRAY2RGB);
+			PictureBox^ pb = pictureBox1;
+
 			Bitmap^ bmp = gcnew Bitmap(rectified[0].cols, rectified[0].rows, rectified[0].step,
 				System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(rectified[0].data));
-			pictureBox1->Image = bmp;
-			pictureBox1->Refresh();
+
+			if (lineToolStripMenuItem->Checked)
+			{
+				Graphics^g = Graphics::FromImage(bmp);
+				SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
+				Pen^ pen = gcnew Pen(brush, 1);
+				for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
+					g->DrawLine(pen, 0, y, bmp->Width, y);
+				}
+			}
+
+			pb->Image = bmp;
+			pb->Refresh();
 		}
 		{
+			PictureBox^ pb = pictureBox2;
+
+
 			Bitmap^ bmp = gcnew Bitmap(rectified[1].cols, rectified[1].rows, rectified[1].step,
 				System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(rectified[1].data));
-			pictureBox2->Image = bmp;
-			pictureBox2->Refresh();
+
+			if (lineToolStripMenuItem->Checked)
+			{
+				Graphics^g = Graphics::FromImage(bmp);
+				SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
+				Pen^ pen = gcnew Pen(brush, 1);
+				for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
+					g->DrawLine(pen, 0, y, bmp->Width, y);
+				}
+			}
+
+			pb->Image = bmp;
+			pb->Refresh();
 		}
-		MessageLabel->Text = "RSM=" + rms.ToString();
 	}
-	
+	if (!finishcalib)
+		MessageLabel->Text = imgcount.ToString();
+	else
+		MessageLabel->Text = "Reprojection Error=" + rms.ToString();
+
+
 }
 
 System::Void CalibrationTool::MainForm::CalibrateThread()
@@ -187,4 +245,21 @@ void CalibrationTool::MainForm::WriteImages() {
 		std::string file = std::to_string(i) + "_right.bmp";
 		cv::imwrite(file, rightvec[i]);
 	}
+}
+
+bool CalibrationTool::MainForm::Stop() {
+	{
+		int number = 30;
+		if (leftvec.size() >= number&&rightvec.size() >= number)
+			return true;
+		return false;
+	}
+
+	{
+
+
+
+
+	}
+
 }
