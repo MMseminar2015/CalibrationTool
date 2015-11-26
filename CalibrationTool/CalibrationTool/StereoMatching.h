@@ -61,7 +61,7 @@ public:
 		char* disparityfilename = 0,
 		char* pointcloud_filename = 0);
 
-	int Matching(
+	static int Matching(
 		Mat &img1, Mat &img2, Mat &disp8);
 
 	static void StereoCalibrate(
@@ -102,6 +102,8 @@ public:
 
 	double StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std::vector<cv::Mat> rightvec);
 
+	double StereoCalibrate_byOhara_Fast(std::vector<cv::Mat> leftvec, std::vector<cv::Mat> rightvec);
+
 	int StereoRectify(Mat img1, Mat img2, Mat& rimg1, Mat& rimg2);
 
 	int SetImageSize(Mat img);
@@ -113,4 +115,6 @@ public:
 	bool OutputIntrinsicParameter(std::string outputfile, Mat cameraMatrix, Mat distCoeffs);
 
 	bool OutputRectifyParameter(std::string outputfile, Mat rmap0, Mat rmap1);
+
+	bool DetectAllPoints(cv::Mat img);
 };

@@ -1254,7 +1254,7 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 		+ 0,
 		1, ImageSize, &validRoi[0], &validRoi[1]);
 
-	progress += 10;
+	//progress += 10;
 
 
 	//Mat rmap[2][2];
@@ -1262,7 +1262,7 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 	cv::initUndistortRectifyMap(cameraMatrix[0], distCoeffs[0], R1, P1, ImageSize, CV_16SC2, Rmap[0][0], Rmap[0][1]);
 	cv::initUndistortRectifyMap(cameraMatrix[1], distCoeffs[1], R2, P2, ImageSize, CV_16SC2, Rmap[1][0], Rmap[1][1]);
 
-	progress += 10;
+	//progress += 10;
 
 	//Mat tmp = Rmap[0][0];
 
@@ -1274,4 +1274,136 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 	}
 
 	return rms;
+}
+
+double StereoMatching::StereoCalibrate_byOhara_Fast(std::vector<cv::Mat> leftvec, std::vector<cv::Mat> rightvec)
+{
+	if (leftvec.size() != rightvec.size())//左右で画像数が違う場合
+		return -1.0;
+
+	std::vector<cv::Mat> grayvec[2];
+	for (int i = 0; i < leftvec.size(); i++) {
+		Mat leftimg;
+		cvtColor(leftvec[i], leftimg, CV_RGB2GRAY);
+		grayvec[0].push_back(leftimg);
+		Mat rightimg;
+		cvtColor(rightvec[i], rightimg, CV_RGB2GRAY);
+		grayvec[1].push_back(rightimg);
+	}
+
+	//std::vector<cv::Mat> ungrayvec[2];
+
+	/*CvMat
+		*intrisic[2] = { cvCreateMat(3, 3, CV_32FC1), cvCreateMat(3, 3, CV_32FC1) },
+		*dist[2] = { cvCreateMat(1, 4, CV_32FC1),cvCreateMat(1, 4, CV_32FC1) },
+		*kn = cvCreateMat(1, 3, CV_32FC1),
+		*ln = cvCreateMat(1, 3, CV_32FC1);
+	for (int i = 0; i < 2; i++) {
+		string filename = "camera";
+		filename += to_string(i) + ".xml";
+		CalibrateCamera::Calibrate_FromImages(grayvec[i], filename, BoardSize.width, BoardSize.height, SquareSize, intrisic[i], kn, ln, dist[i]);
+		ungrayvec[i] = Undistort::Undistortion(grayvec[i], intrisic[i], dist[i]);
+		CameraMatrix[i] = intrisic[i];
+		DistCoeffs[i] = dist[i];
+	}*/
+
+	//
+	// チェッカーボード検出
+	//
+	vector<vector<Point2f>> imagePoints[2];
+	vector<vector<Point3f>> objectPoints;
+
+	int i, j, k, nimages = leftvec.size();
+
+	imagePoints[0].resize(nimages);
+	imagePoints[1].resize(nimages);
+
+	vector<int> goodindex;
+	for (i = j = 0; i < nimages; i++)
+	{
+		for (k = 0; k < 2; k++)
+		{
+
+			Mat img = grayvec[k][i]; //ungrayvec[k][i];
+
+
+			bool found = false;
+			vector<Point2f>& corners = imagePoints[k][j];
+
+			/* チェッカーボード検出 */
+			found = findChessboardCorners(img, BoardSize, corners,
+				CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE);
+
+
+			/* チェッカーボードが検出できなかった場合次の画像ペアを処理 */
+			if (!found)
+				break;
+
+			cornerSubPix(img, corners, Size(11, 11), Size(-1, -1),
+				TermCriteria(TermCriteria::COUNT + TermCriteria::EPS,
+					30, 0.01));
+		}
+		if (k == 2)
+		{
+			goodindex.push_back(i);
+			j++;
+		}
+	}
+	//progress += 10;
+
+	nimages = j;
+
+	//
+	// objectPoints検出
+	//
+	imagePoints[0].resize(nimages);
+	imagePoints[1].resize(nimages);
+	objectPoints.resize(nimages);
+
+	for (i = 0; i < nimages; i++)
+	{
+		for (j = 0; j < BoardSize.height; j++)
+			for (k = 0; k < BoardSize.width; k++)
+				objectPoints[i].push_back(Point3f(k*SquareSize, j*SquareSize, 0));
+	}
+
+	Mat cameraMatrix[2], distCoeffs[2];
+	cameraMatrix[0] = initCameraMatrix2D(objectPoints, imagePoints[0], ImageSize, 0);
+	cameraMatrix[1] = initCameraMatrix2D(objectPoints, imagePoints[1], ImageSize, 0);
+
+	Mat R, T, E, F;
+
+	//
+	// 左右のカメラの内部パラメータ計算
+	// 
+	vector<cv::Mat> newimagelist[2];
+	for (int i = 0; i < goodindex.size(); i++) {
+		newimagelist[0].push_back(grayvec[0][goodindex[i]]);
+		newimagelist[1].push_back(grayvec[1][goodindex[i]]);
+	}
+
+	//
+	// 内部、外部パラメータの計算
+	// 初期値(cameraMatrix,distCoeffs)を与える必要あり
+	//
+	double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
+		cameraMatrix[0], distCoeffs[0],
+		cameraMatrix[1], distCoeffs[1],
+		ImageSize, R, T, E, F,
+		cvTermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 100, 1e-5),
+		CV_CALIB_SAME_FOCAL_LENGTH | CV_CALIB_ZERO_TANGENT_DIST);
+
+	return rms;
+}
+
+bool StereoMatching::DetectAllPoints(cv::Mat img)
+{
+	vector<Point2f> corners;
+	bool found = false;
+
+	/* チェッカーボード検出 */
+	found = findChessboardCorners(img, BoardSize, corners,
+			CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE);
+
+	return found;
 }

@@ -55,16 +55,25 @@ FlyCap::FlyCap(FlyCapture2::VideoMode vm, FlyCapture2::FrameRate fr, float fps)
 		prop.autoManualMode = false;
 		prop.absValue = fps;
 		ppCams[i]->SetProperty(&prop);
+		//shutter speed設定
+		prop.type = FlyCapture2::PropertyType::SHUTTER;
+		prop.absControl = true;
+		prop.onePush = false;
+		prop.onOff = false;
+		prop.autoManualMode = false;
+		prop.absValue = 10;
+		ppCams[i]->SetProperty(&prop);
 	}
 
 	//カメラから画像の転送を開始
 	fcerror = Camera::StartSyncCapture(numCams, (const Camera**)ppCams);
 	if (fcerror != PGRERROR_OK) exit(1);
 
-	//バッファ内の最新データを取り出すように設定(start)
+	//バッファ内の最新データを取り出すように設定(start後でないと反映されない)
 	for (unsigned int i = 0; i < numCams; i++)
 	{
 		FC2Config conf;
+		//conf.grabMode = GrabMode::BUFFER_FRAMES;
 		conf.grabMode = GrabMode::DROP_FRAMES;
 		ppCams[i]->SetConfiguration(&conf);
 	}

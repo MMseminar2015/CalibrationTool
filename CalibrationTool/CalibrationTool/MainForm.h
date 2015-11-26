@@ -37,7 +37,12 @@ namespace CalibrationTool {
 
 	private: bool recflg;
 			 double fps;// = 1;
-	private: System::Windows::Forms::CheckBox^  checkBox1;
+			 bool refreshflg;
+	private: System::Windows::Forms::TextBox^  textBox1;
+	private: System::Windows::Forms::TextBox^  textBox2;
+	private: System::Windows::Forms::ToolStripMenuItem^  lineToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripMenuItem^  rectifiedToolStripMenuItem;
+
 			 Configurations conf;
 	
 
@@ -57,6 +62,7 @@ namespace CalibrationTool {
 			recthread->IsBackground = true;// バックグラウンド化してから起動
 			recthread->Start();
 			recflg = false;
+			refreshflg = true;
 
 		}
 
@@ -120,7 +126,10 @@ namespace CalibrationTool {
 			this->panel1 = (gcnew System::Windows::Forms::Panel());
 			this->progressBar1 = (gcnew System::Windows::Forms::ProgressBar());
 			this->MessageLabel = (gcnew System::Windows::Forms::Label());
-			this->checkBox1 = (gcnew System::Windows::Forms::CheckBox());
+			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
+			this->textBox2 = (gcnew System::Windows::Forms::TextBox());
+			this->lineToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->rectifiedToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->menuStrip1->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox2))->BeginInit();
@@ -137,7 +146,7 @@ namespace CalibrationTool {
 			this->menuStrip1->Location = System::Drawing::Point(0, 0);
 			this->menuStrip1->Name = L"menuStrip1";
 			this->menuStrip1->Padding = System::Windows::Forms::Padding(10, 3, 0, 3);
-			this->menuStrip1->Size = System::Drawing::Size(2138, 33);
+			this->menuStrip1->Size = System::Drawing::Size(2138, 34);
 			this->menuStrip1->TabIndex = 0;
 			this->menuStrip1->Text = L"menuStrip1";
 			// 
@@ -148,7 +157,7 @@ namespace CalibrationTool {
 					this->openProjectToolStripMenuItem, this->saveToolStripMenuItem
 			});
 			this->fileToolStripMenuItem->Name = L"fileToolStripMenuItem";
-			this->fileToolStripMenuItem->Size = System::Drawing::Size(52, 27);
+			this->fileToolStripMenuItem->Size = System::Drawing::Size(52, 28);
 			this->fileToolStripMenuItem->Text = L"File";
 			// 
 			// newProjectToolStripMenuItem
@@ -172,9 +181,12 @@ namespace CalibrationTool {
 			// 
 			// calibrationToolStripMenuItem
 			// 
-			this->calibrationToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) { this->conditionToolStripMenuItem });
+			this->calibrationToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {
+				this->conditionToolStripMenuItem,
+					this->lineToolStripMenuItem, this->rectifiedToolStripMenuItem
+			});
 			this->calibrationToolStripMenuItem->Name = L"calibrationToolStripMenuItem";
-			this->calibrationToolStripMenuItem->Size = System::Drawing::Size(116, 27);
+			this->calibrationToolStripMenuItem->Size = System::Drawing::Size(116, 28);
 			this->calibrationToolStripMenuItem->Text = L"Calibration";
 			// 
 			// conditionToolStripMenuItem
@@ -184,7 +196,7 @@ namespace CalibrationTool {
 					this->distributionToolStripMenuItem, this->reprojectionErrorToolStripMenuItem
 			});
 			this->conditionToolStripMenuItem->Name = L"conditionToolStripMenuItem";
-			this->conditionToolStripMenuItem->Size = System::Drawing::Size(177, 30);
+			this->conditionToolStripMenuItem->Size = System::Drawing::Size(211, 30);
 			this->conditionToolStripMenuItem->Text = L"Condition";
 			// 
 			// numberToolStripMenuItem
@@ -210,7 +222,7 @@ namespace CalibrationTool {
 			// stereoToolStripMenuItem
 			// 
 			this->stereoToolStripMenuItem->Name = L"stereoToolStripMenuItem";
-			this->stereoToolStripMenuItem->Size = System::Drawing::Size(163, 27);
+			this->stereoToolStripMenuItem->Size = System::Drawing::Size(163, 28);
 			this->stereoToolStripMenuItem->Text = L"Stereo Matching";
 			// 
 			// pictureBox1
@@ -272,22 +284,43 @@ namespace CalibrationTool {
 			this->MessageLabel->TabIndex = 5;
 			this->MessageLabel->Text = L"message";
 			// 
-			// checkBox1
+			// textBox1
 			// 
-			this->checkBox1->AutoSize = true;
-			this->checkBox1->Location = System::Drawing::Point(1821, 9);
-			this->checkBox1->Name = L"checkBox1";
-			this->checkBox1->Size = System::Drawing::Size(77, 22);
-			this->checkBox1->TabIndex = 6;
-			this->checkBox1->Text = L"effect";
-			this->checkBox1->UseVisualStyleBackColor = true;
+			this->textBox1->Location = System::Drawing::Point(954, 8);
+			this->textBox1->Name = L"textBox1";
+			this->textBox1->Size = System::Drawing::Size(100, 25);
+			this->textBox1->TabIndex = 7;
+			// 
+			// textBox2
+			// 
+			this->textBox2->Location = System::Drawing::Point(1078, 8);
+			this->textBox2->Name = L"textBox2";
+			this->textBox2->Size = System::Drawing::Size(100, 25);
+			this->textBox2->TabIndex = 8;
+			// 
+			// lineToolStripMenuItem
+			// 
+			this->lineToolStripMenuItem->CheckOnClick = true;
+			this->lineToolStripMenuItem->Name = L"lineToolStripMenuItem";
+			this->lineToolStripMenuItem->Size = System::Drawing::Size(211, 30);
+			this->lineToolStripMenuItem->Text = L"Line";
+			// 
+			// rectifiedToolStripMenuItem
+			// 
+			this->rectifiedToolStripMenuItem->Checked = true;
+			this->rectifiedToolStripMenuItem->CheckOnClick = true;
+			this->rectifiedToolStripMenuItem->CheckState = System::Windows::Forms::CheckState::Checked;
+			this->rectifiedToolStripMenuItem->Name = L"rectifiedToolStripMenuItem";
+			this->rectifiedToolStripMenuItem->Size = System::Drawing::Size(211, 30);
+			this->rectifiedToolStripMenuItem->Text = L"Rectified";
 			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(10, 18);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(2138, 796);
-			this->Controls->Add(this->checkBox1);
+			this->Controls->Add(this->textBox2);
+			this->Controls->Add(this->textBox1);
 			this->Controls->Add(this->MessageLabel);
 			this->Controls->Add(this->button_record);
 			this->Controls->Add(this->panel1);
@@ -338,17 +371,27 @@ namespace CalibrationTool {
 
 	private: System::Void CalibrateThread();
 
+	private: System::Void CalcReprojectionThread();
+
 	private: System::Void ProgressThread();
 	private: delegate System::Void ProgressDelegate(int num);
 	private: System::Void Progress(int num);
 	private: System::Void ProgressEnd(int num);
 	  
-  private: System::Void FindChessboardThread();
+  private: System::Void FindChessboardThread(Object^ o);
 
-private: System::Void newProjectToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
-	NewProjectForm ^fm = gcnew NewProjectForm();
-	fm->ShowDialog();
-	MessageLabel->Text = fm->GetSaveDirectory();
-}
+	private: System::Void newProjectToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
+		NewProjectForm ^fm = gcnew NewProjectForm();
+		fm->ShowDialog();
+		MessageLabel->Text = fm->GetSaveDirectory();
+	}
+	 private: System::Void pictureBox_Click(System::Object^  sender, System::EventArgs^  e) {
+		 if (refreshflg)
+			 refreshflg = false;
+		 else
+			 refreshflg = true;
+	 }
+
 };
+
 }
