@@ -350,11 +350,12 @@ namespace CalibrationTool {
 
 	}
 	private: void WriteImages();
-
+			 //画像取得
 	private: System::Void RecordThread();
 	private: delegate System::Void DisplayDelegate();
+			 //画像表示
 	private: System::Void Display();
-
+			 //キャリブレーション
 	private: System::Void CalibrateThread();
 
 	private: System::Void ProgressThread();
@@ -362,14 +363,16 @@ namespace CalibrationTool {
 	private: System::Void Progress(int num);
 	private: System::Void ProgressEnd(int num);
 	  
-  private: System::Void FindChessboardThread();
-		   private: bool Stop();
+	private: System::Void FindChessboardThread();
+	private: bool Stop();
 
+		
 private: System::Void newProjectToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
 	NewProjectForm ^fm = gcnew NewProjectForm();
 	fm->ShowDialog();
 	MessageLabel->Text = fm->GetSaveDirectory();
 }
+		 //画像をクリックしたら画面更新が止まる
 private: System::Void pictureBox_Click(System::Object^  sender, System::EventArgs^  e) {
 	if (refreshflg)
 		refreshflg = false;
