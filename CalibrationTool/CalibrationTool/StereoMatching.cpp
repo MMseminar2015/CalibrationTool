@@ -1387,13 +1387,55 @@ double StereoMatching::StereoCalibrate_byOhara_Fast(std::vector<cv::Mat> leftvec
 	// èâä˙íl(cameraMatrix,distCoeffs)Çó^Ç¶ÇÈïKóvÇ†ÇË
 	//
 	double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
-		cameraMatrix[0], distCoeffs[0],
-		cameraMatrix[1], distCoeffs[1],
+		CameraMatrix[0], DistCoeffs[0],
+		CameraMatrix[1], DistCoeffs[1],
 		ImageSize, R, T, E, F,
 		cvTermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 100, 1e-5),
-		CV_CALIB_SAME_FOCAL_LENGTH | CV_CALIB_ZERO_TANGENT_DIST);
+		CALIB_FIX_INTRINSIC +
+		//CALIB_FIX_PRINCIPAL_POINT +
+		//CALIB_FIX_ASPECT_RATIO +
+		//CALIB_ZERO_TANGENT_DIST +
+		CALIB_USE_INTRINSIC_GUESS +
+		//CALIB_SAME_FOCAL_LENGTH +
+		//CALIB_RATIONAL_MODEL +
+		//CALIB_FIX_K3 +
+		//CALIB_FIX_K4 +
+		//CALIB_FIX_K5 +
+		//CALIB_FIX_K6 +
+		0);
 
 	return rms;
+}
+
+int StereoMatching::MonoCalibrate(std::vector<cv::Mat> leftvec, std::vector<cv::Mat> rightvec) {
+
+	std::vector<cv::Mat> grayvec[2];
+	for (int i = 0; i < leftvec.size(); i++) {
+		Mat leftimg;
+		cvtColor(leftvec[i], leftimg, CV_RGB2GRAY);
+		grayvec[0].push_back(leftimg);
+		Mat rightimg;
+		cvtColor(rightvec[i], rightimg, CV_RGB2GRAY);
+		grayvec[1].push_back(rightimg);
+	}
+
+	//std::vector<cv::Mat> ungrayvec[2];
+
+	CvMat
+	*intrisic[2] = { cvCreateMat(3, 3, CV_32FC1), cvCreateMat(3, 3, CV_32FC1) },
+	*dist[2] = { cvCreateMat(1, 4, CV_32FC1),cvCreateMat(1, 4, CV_32FC1) },
+	*kn = cvCreateMat(1, 3, CV_32FC1),
+	*ln = cvCreateMat(1, 3, CV_32FC1);
+	for (int i = 0; i < 2; i++) {
+		string filename = "camera";
+		filename += to_string(i) + ".xml";
+		CalibrateCamera::Calibrate_FromImages(grayvec[i], filename, BoardSize.width, BoardSize.height, SquareSize, intrisic[i], kn, ln, dist[i]);
+		//ungrayvec[i] = Undistort::Undistortion(grayvec[i], intrisic[i], dist[i]);
+		CameraMatrix[i] = intrisic[i];
+		DistCoeffs[i] = dist[i];
+	}
+
+	return 0;
 }
 
 bool StereoMatching::DetectAllPoints(cv::Mat img)

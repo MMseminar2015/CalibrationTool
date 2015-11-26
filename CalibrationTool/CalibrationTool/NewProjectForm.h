@@ -19,7 +19,10 @@ namespace CalibrationTool {
 		System::String^ dir;
 		int c_width;
 		int c_height;
-		double c_size;
+	private: System::Windows::Forms::PictureBox^  chessimg;
+
+
+			 double c_size;
 
 
 
@@ -97,10 +100,12 @@ namespace CalibrationTool {
 			this->label6 = (gcnew System::Windows::Forms::Label());
 			this->BrowseButton = (gcnew System::Windows::Forms::Button());
 			this->folderBrowserDialog1 = (gcnew System::Windows::Forms::FolderBrowserDialog());
+			this->chessimg = (gcnew System::Windows::Forms::PictureBox());
 			this->groupBox1->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessSize))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessHeight))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessWidth))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chessimg))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// SaveDir
@@ -112,6 +117,7 @@ namespace CalibrationTool {
 			// 
 			// groupBox1
 			// 
+			this->groupBox1->Controls->Add(this->chessimg);
 			this->groupBox1->Controls->Add(this->ChessSize);
 			this->groupBox1->Controls->Add(this->ChessHeight);
 			this->groupBox1->Controls->Add(this->ChessWidth);
@@ -122,7 +128,7 @@ namespace CalibrationTool {
 			this->groupBox1->Controls->Add(this->label1);
 			this->groupBox1->Location = System::Drawing::Point(12, 268);
 			this->groupBox1->Name = L"groupBox1";
-			this->groupBox1->Size = System::Drawing::Size(419, 145);
+			this->groupBox1->Size = System::Drawing::Size(419, 302);
 			this->groupBox1->TabIndex = 3;
 			this->groupBox1->TabStop = false;
 			this->groupBox1->Text = L"Chess Board";
@@ -144,6 +150,7 @@ namespace CalibrationTool {
 			this->ChessHeight->Size = System::Drawing::Size(70, 19);
 			this->ChessHeight->TabIndex = 10;
 			this->ChessHeight->Value = System::Decimal(gcnew cli::array< System::Int32 >(4) { 10, 0, 0, 0 });
+			this->ChessHeight->ValueChanged += gcnew System::EventHandler(this, &NewProjectForm::Chess_ValueChanged);
 			// 
 			// ChessWidth
 			// 
@@ -152,6 +159,7 @@ namespace CalibrationTool {
 			this->ChessWidth->Size = System::Drawing::Size(70, 19);
 			this->ChessWidth->TabIndex = 9;
 			this->ChessWidth->Value = System::Decimal(gcnew cli::array< System::Int32 >(4) { 7, 0, 0, 0 });
+			this->ChessWidth->ValueChanged += gcnew System::EventHandler(this, &NewProjectForm::Chess_ValueChanged);
 			// 
 			// label5
 			// 
@@ -200,7 +208,7 @@ namespace CalibrationTool {
 			// 
 			// OK_Button
 			// 
-			this->OK_Button->Location = System::Drawing::Point(357, 446);
+			this->OK_Button->Location = System::Drawing::Point(355, 576);
 			this->OK_Button->Name = L"OK_Button";
 			this->OK_Button->Size = System::Drawing::Size(75, 23);
 			this->OK_Button->TabIndex = 4;
@@ -236,11 +244,19 @@ namespace CalibrationTool {
 			this->BrowseButton->UseVisualStyleBackColor = true;
 			this->BrowseButton->Click += gcnew System::EventHandler(this, &NewProjectForm::BrowseButton_Click);
 			// 
+			// chessimg
+			// 
+			this->chessimg->Location = System::Drawing::Point(179, 16);
+			this->chessimg->Name = L"chessimg";
+			this->chessimg->Size = System::Drawing::Size(234, 280);
+			this->chessimg->TabIndex = 12;
+			this->chessimg->TabStop = false;
+			// 
 			// NewProjectForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 12);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(444, 481);
+			this->ClientSize = System::Drawing::Size(442, 611);
 			this->Controls->Add(this->BrowseButton);
 			this->Controls->Add(this->label6);
 			this->Controls->Add(this->groupBox2);
@@ -254,6 +270,7 @@ namespace CalibrationTool {
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessSize))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessHeight))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessWidth))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chessimg))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -280,6 +297,42 @@ private: System::Void OK_Button_Click(System::Object^  sender, System::EventArgs
 			 int GetChessHeight() { return c_height; }
 			 double GetChessSize() { return c_size; }
 
+
+private: System::Void Chess_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
+}
+
+private: System::Void DrawChessBoard() {
+	Bitmap^ canvas = gcnew Bitmap(chessimg->Width, chessimg->.Height);
+	//ImageオブジェクトのGraphicsオブジェクトを作成する
+	Graphics^ g = Graphics::FromImage(canvas);
+
+	System::Drawing::Region^ rgn;
+	Rectangle^ rect1;
+	Rectangle^ rect2;
+
+	//Regionで使用する2つの領域
+	rect1 = gcnew Rectangle(0, 0, 40, 40);
+	rect2 = gcnew Rectangle(20, 20, 40, 40);
+
+	//rect1を青で塗る
+	g->FillRectangle(Brushes::Blue, *rect1);
+	//rect2を緑で塗る
+	g->FillRectangle(Brushes::Green, *rect2);
+	//rect1でRegionを作成
+	rgn = gcnew System::Drawing::Region(*rect1);
+	//Union(和集合)によりrect2を追加
+	rgn->Union(*rect2);
+	//出来上がったRegionを黒で描画
+	g->FillRegion(Brushes::Black, rgn);
+
+
+	//リソースを解放する
+	g->Dispose();
+
+	//PictureBox1に表示する
+	chessimg->Image = canvas;
+
+}
 
 };
 }

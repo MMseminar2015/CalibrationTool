@@ -24,6 +24,8 @@ bool foundLeft = false;
 bool foundRight = false;
 double prerms = 10000;
 
+int state = 0;
+
 void CalibrationTool::MainForm::ReloadPicture()
 {
 	throw gcnew System::NotImplementedException();
@@ -65,7 +67,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 		if (CalibrationTool::MainForm::recflg)
 		{
 			//if (count > fps * 30)
-			if (count > fps * 10)// && foundLeft && foundRight)
+			if (count > fps * 30)// && foundLeft && foundRight)
 			{
 				leftvec.push_back(pic[0].clone());
 
@@ -74,9 +76,15 @@ System::Void CalibrationTool::MainForm::RecordThread()
 					size = pic[0].size();
 					stereo.SetImageSize(pic[0]);
 				}
-				Thread^ th = gcnew Thread(gcnew ParameterizedThreadStart(this, &MainForm::FindChessboardThread));//チェスボード検出
-				th->IsBackground = true;
-				th->Start(index);
+				
+
+				//Thread^ th = gcnew Thread(gcnew ParameterizedThreadStart(this, &MainForm::FindChessboardThread));//チェスボード検出
+				//th->IsBackground = true;
+				//th->Start(index);
+
+				//スレッドプールの利用
+				WaitCallback^ waitCallback = gcnew WaitCallback(this,MainForm::FindChessboardThread);
+				ThreadPool::QueueUserWorkItem(waitCallback, index);
 
 				
 
@@ -85,9 +93,15 @@ System::Void CalibrationTool::MainForm::RecordThread()
 				count = 0;
 				index++;
 			}
+
+			if (imgcount != 0 && imgcount % 20 == 0) {
+				Thread^ calbt = gcnew Thread(gcnew ThreadStart(this, &MainForm::CalcReprojectionThread));
+				calbt->IsBackground = true;
+				calbt->Start();
+			}
 			
 			//30枚撮ったら終了
-			if(imgcount > 20)
+			if(imgcount > 100)
 			{
 				recflg = false;
 				//MainForm::progressBar1->Visible = true;
@@ -104,11 +118,15 @@ System::Void CalibrationTool::MainForm::RecordThread()
 				//cv::imshow("1", pic[0]);
 				//cv::imshow("2", pic[1]);
 				//cv::waitKey(1);
-
-				Mat disp8;
-				StereoMatching::Matching(rectified[0], rectified[1], disp8);
-				imshow("disparity", disp8);
-				waitKey(1);
+				if (viewResultToolStripMenuItem->Checked) {
+					Mat disp8;
+					if(rectifiedToolStripMenuItem->Checked)
+						StereoMatching::Matching(rectified[0], rectified[1], disp8);
+					else
+						StereoMatching::Matching(pic[0], pic[1], disp8);
+					imshow("disparity", disp8);
+					waitKey(1);
+				}
 			}
 		}
 		count++;
@@ -129,6 +147,12 @@ System::Void CalibrationTool::MainForm::FindChessboardThread(Object^ o)
 		goodindex.push_back(index);
 		imgcount++;
 	}
+}
+
+System::Void CalibrationTool::MainForm::StereoMatchingThread(Object^ o) {
+
+
+
 }
 
 System::Void CalibrationTool::MainForm::Display()
@@ -339,6 +363,10 @@ System::Void CalibrationTool::MainForm::CalibrateThread()
 	}
 
 	rms =stereo.StereoCalibrate_byOhara(tmpleftvec, tmprightvec);
+
+	leftvec.clear();
+	rightvec.clear();
+
 	finishcalib = true;
 	//for (int i = 0; i < 100; i++) {
 	//	Thread::Sleep(100);
@@ -346,6 +374,8 @@ System::Void CalibrationTool::MainForm::CalibrateThread()
 	//	BeginInvoke(gcnew ProgressDelegate(this, &MainForm::Progress),i);
 	//}
 	BeginInvoke(gcnew ProgressDelegate(this, &MainForm::Progress), 100);
+
+
 }
 
 System::Void CalibrationTool::MainForm::CalcReprojectionThread() {
@@ -356,9 +386,15 @@ System::Void CalibrationTool::MainForm::CalcReprojectionThread() {
 		tmpleftvec.push_back(leftvec[goodindex[i]]);
 		tmprightvec.push_back(rightvec[goodindex[i]]);
 	}
+	if (state == 0) {
+		state = 1;
+		stereo.MonoCalibrate(tmpleftvec, tmprightvec);
+		state = 2;
+	}
+	while(state==2)
+
 	double rms=stereo.StereoCalibrate_byOhara_Fast(tmpleftvec, tmprightvec);
 	prerms = rms;
-
 }
 
 System::Void CalibrationTool::MainForm::Progress(int num)
