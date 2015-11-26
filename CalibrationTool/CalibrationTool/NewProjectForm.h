@@ -302,35 +302,35 @@ private: System::Void Chess_ValueChanged(System::Object^  sender, System::EventA
 }
 
 private: System::Void DrawChessBoard() {
-	Bitmap^ canvas = gcnew Bitmap(chessimg->Width, chessimg->.Height);
-	//ImageオブジェクトのGraphicsオブジェクトを作成する
-	Graphics^ g = Graphics::FromImage(canvas);
+	//Bitmap^ canvas = gcnew Bitmap(chessimg->Width, chessimg->.Height);
+	////ImageオブジェクトのGraphicsオブジェクトを作成する
+	//Graphics^ g = Graphics::FromImage(canvas);
 
-	System::Drawing::Region^ rgn;
-	Rectangle^ rect1;
-	Rectangle^ rect2;
+	//System::Drawing::Region^ rgn;
+	//System::Drawing::Rectangle^ rect1;
+	//System::Drawing::Rectangle^ rect2;
 
-	//Regionで使用する2つの領域
-	rect1 = gcnew Rectangle(0, 0, 40, 40);
-	rect2 = gcnew Rectangle(20, 20, 40, 40);
+	////Regionで使用する2つの領域
+	//rect1 = gcnew System::Drawing::Rectangle(0, 0, 40, 40);
+	//rect2 = gcnew System::Drawing::Rectangle(20, 20, 40, 40);
 
-	//rect1を青で塗る
-	g->FillRectangle(Brushes::Blue, *rect1);
-	//rect2を緑で塗る
-	g->FillRectangle(Brushes::Green, *rect2);
-	//rect1でRegionを作成
-	rgn = gcnew System::Drawing::Region(*rect1);
-	//Union(和集合)によりrect2を追加
-	rgn->Union(*rect2);
-	//出来上がったRegionを黒で描画
-	g->FillRegion(Brushes::Black, rgn);
+	////rect1を青で塗る
+	//g->FillRectangle(Brushes::Blue, *rect1);
+	////rect2を緑で塗る
+	//g->FillRectangle(Brushes::Green, *rect2);
+	////rect1でRegionを作成
+	//rgn = gcnew System::Drawing::Region(*rect1);
+	////Union(和集合)によりrect2を追加
+	//rgn->Union(*rect2);
+	////出来上がったRegionを黒で描画
+	//g->FillRegion(Brushes::Black, rgn);
 
 
-	//リソースを解放する
-	g->Dispose();
+	////リソースを解放する
+	//g->Dispose();
 
-	//PictureBox1に表示する
-	chessimg->Image = canvas;
+	////PictureBox1に表示する
+	//chessimg->Image = canvas;
 
 }
 

@@ -83,7 +83,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 				//th->Start(index);
 
 				//スレッドプールの利用
-				WaitCallback^ waitCallback = gcnew WaitCallback(this,MainForm::FindChessboardThread);
+				WaitCallback^ waitCallback = gcnew WaitCallback(this,&MainForm::FindChessboardThread);
 				ThreadPool::QueueUserWorkItem(waitCallback, index);
 
 				
