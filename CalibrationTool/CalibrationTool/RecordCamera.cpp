@@ -10,7 +10,7 @@ int count = 0;
 
 RecordCamera::RecordCamera()
 {
-	files = FileUtility::GetFilesFromDirectory("C:\\Users\\Ohara Kazuya\\Desktop\\FlyCap_pic", "*.bmp");
+	files = FileUtility::GetFilesFromDirectory("C:\\Users\\Ohara Kazuya\\Desktop\\1113pic\\1113", "*.png");
 }
 
 void RecordCamera::Recording(cv::Mat* pic)

@@ -192,7 +192,7 @@ namespace CalibrationTool {
 			// 
 			this->lineToolStripMenuItem->CheckOnClick = true;
 			this->lineToolStripMenuItem->Name = L"lineToolStripMenuItem";
-			this->lineToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->lineToolStripMenuItem->Size = System::Drawing::Size(124, 22);
 			this->lineToolStripMenuItem->Text = L"Line";
 			// 
 			// rectifiedToolStripMenuItem
@@ -201,7 +201,7 @@ namespace CalibrationTool {
 			this->rectifiedToolStripMenuItem->CheckOnClick = true;
 			this->rectifiedToolStripMenuItem->CheckState = System::Windows::Forms::CheckState::Checked;
 			this->rectifiedToolStripMenuItem->Name = L"rectifiedToolStripMenuItem";
-			this->rectifiedToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->rectifiedToolStripMenuItem->Size = System::Drawing::Size(124, 22);
 			this->rectifiedToolStripMenuItem->Text = L"Rectified";
 			// 
 			// stereoToolStripMenuItem
@@ -218,7 +218,7 @@ namespace CalibrationTool {
 			// 
 			this->viewResultToolStripMenuItem->CheckOnClick = true;
 			this->viewResultToolStripMenuItem->Name = L"viewResultToolStripMenuItem";
-			this->viewResultToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->viewResultToolStripMenuItem->Size = System::Drawing::Size(142, 22);
 			this->viewResultToolStripMenuItem->Text = L"View Result";
 			// 
 			// algorToolStripMenuItem
@@ -228,7 +228,7 @@ namespace CalibrationTool {
 					this->sGBMToolStripMenuItem
 			});
 			this->algorToolStripMenuItem->Name = L"algorToolStripMenuItem";
-			this->algorToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->algorToolStripMenuItem->Size = System::Drawing::Size(142, 22);
 			this->algorToolStripMenuItem->Text = L"Algorithm";
 			// 
 			// bMToolStripMenuItem
@@ -238,7 +238,7 @@ namespace CalibrationTool {
 			this->bMToolStripMenuItem->CheckState = System::Windows::Forms::CheckState::Checked;
 			this->bMToolStripMenuItem->Enabled = false;
 			this->bMToolStripMenuItem->Name = L"bMToolStripMenuItem";
-			this->bMToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->bMToolStripMenuItem->Size = System::Drawing::Size(109, 22);
 			this->bMToolStripMenuItem->Text = L"BM";
 			this->bMToolStripMenuItem->CheckedChanged += gcnew System::EventHandler(this, &MainForm::bMToolStripMenuItem_CheckedChanged);
 			// 
@@ -246,7 +246,7 @@ namespace CalibrationTool {
 			// 
 			this->sGBMToolStripMenuItem->CheckOnClick = true;
 			this->sGBMToolStripMenuItem->Name = L"sGBMToolStripMenuItem";
-			this->sGBMToolStripMenuItem->Size = System::Drawing::Size(152, 22);
+			this->sGBMToolStripMenuItem->Size = System::Drawing::Size(109, 22);
 			this->sGBMToolStripMenuItem->Text = L"SGBM";
 			this->sGBMToolStripMenuItem->CheckedChanged += gcnew System::EventHandler(this, &MainForm::sGBMToolStripMenuItem_CheckedChanged);
 			// 
@@ -257,6 +257,7 @@ namespace CalibrationTool {
 			this->pictureBox1->Size = System::Drawing::Size(640, 480);
 			this->pictureBox1->TabIndex = 1;
 			this->pictureBox1->TabStop = false;
+			this->pictureBox1->Click += gcnew System::EventHandler(this, &MainForm::pictureBox_Click);
 			// 
 			// pictureBox2
 			// 
@@ -265,6 +266,7 @@ namespace CalibrationTool {
 			this->pictureBox2->Size = System::Drawing::Size(640, 480);
 			this->pictureBox2->TabIndex = 2;
 			this->pictureBox2->TabStop = false;
+			this->pictureBox2->Click += gcnew System::EventHandler(this, &MainForm::pictureBox_Click);
 			// 
 			// panel1
 			// 

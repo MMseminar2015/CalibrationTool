@@ -81,7 +81,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 		if (CalibrationTool::MainForm::recflg)
 		{
 			//if (count > fps * 30)
-			if (count > fps * 30)// && foundLeft && foundRight)
+			//if (count > fps * 30)// && foundLeft && foundRight)
 			{
 				leftvec.push_back(pic[0].clone());
 
@@ -183,7 +183,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 			cv::imwrite(stdfile + "_disprect.png", disp8);
 			StereoMatching::Matching(pic[0], pic[1], disp8, alg);
 			cv::imwrite(stdfile + "_disporg.png", disp8);
-
+			saveflg = false;
 		}
 
 
@@ -300,109 +300,128 @@ System::Void CalibrationTool::MainForm::Display()
 	//	MessageLabel->Text = "RSM=" + rms.ToString();
 	//}
 
-	int linenum = 20;
-	if (!finishcalib || !rectifiedToolStripMenuItem->Checked)
-	{
+	try {
+		int linenum = 20;
+		if (!finishcalib || !rectifiedToolStripMenuItem->Checked)
 		{
-			PictureBox^ pb = pictureBox1;
-
-			Bitmap^ bmp = gcnew Bitmap(pic[0].cols, pic[0].rows, pic[0].step,
-				System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(pic[0].data));
-
-			if (lineToolStripMenuItem->Checked)
 			{
-				Graphics^g = Graphics::FromImage(bmp);
-				SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
-				Pen^ pen = gcnew Pen(brush, 1);
-				for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
-					g->DrawLine(pen, 0, y, bmp->Width, y);//ƒ‰ƒCƒ“‚Ì•`‰æ
+				PictureBox^ pb = pictureBox1;
+
+				Bitmap^ bmp = gcnew Bitmap(pic[0].cols, pic[0].rows, pic[0].step,
+					System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(pic[0].data));
+
+				if (lineToolStripMenuItem->Checked)
+				{
+					Graphics^g = Graphics::FromImage(bmp);
+					SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
+					Pen^ pen = gcnew Pen(brush, 1);
+					for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
+						g->DrawLine(pen, 0, y, bmp->Width, y);//ƒ‰ƒCƒ“‚Ì•`‰æ
+					}
 				}
+
+				pb->Image = bmp;
+				pb->Refresh();
 			}
-
-			pb->Image = bmp;
-			pb->Refresh();
-		}
-		{
-
-			PictureBox^ pb = pictureBox2;
-
-			Bitmap^ bmp;
-			if (viewResultToolStripMenuItem->Checked){
-				bmp = gcnew Bitmap(disp.cols, disp.rows, disp.step,
-					System::Drawing::Imaging::PixelFormat::Format16bppGrayScale, IntPtr(disp.data));
-			}
-			else {
-				bmp = gcnew Bitmap(pic[1].cols, pic[1].rows, pic[1].step,
-					System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(pic[1].data));
-			}
-
-			if (lineToolStripMenuItem->Checked)
 			{
-				Graphics^g = Graphics::FromImage(bmp);
-				SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
-				Pen^ pen = gcnew Pen(brush, 1);
-				for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
-					g->DrawLine(pen, 0, y, bmp->Width, y);
+
+				PictureBox^ pb = pictureBox2;
+
+				Bitmap^ bmp;
+				if (viewResultToolStripMenuItem->Checked) {
+					bmp = gcnew Bitmap(disp.cols, disp.rows, disp.step,
+						System::Drawing::Imaging::PixelFormat::Format8bppIndexed, IntPtr(disp.data));
+					System::Drawing::Imaging::ColorPalette^ palette = bmp->Palette;
+					for (int i = 0; i < palette->Entries->Length; i++)
+					{
+						palette->Entries[i] = Color::FromArgb(i, i, i);
+					}
+					bmp->Palette = palette;
+
 				}
+				else {
+					bmp = gcnew Bitmap(pic[1].cols, pic[1].rows, pic[1].step,
+						System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(pic[1].data));
+				}
+
+				if (lineToolStripMenuItem->Checked)
+				{
+					Graphics^g = Graphics::FromImage(bmp);
+					SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
+					Pen^ pen = gcnew Pen(brush, 1);
+					for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
+						g->DrawLine(pen, 0, y, bmp->Width, y);
+					}
+				}
+
+				pb->Image = bmp;
+				pb->Refresh();
 			}
 
-			pb->Image = bmp;
-			pb->Refresh();
 		}
+		else {
 
+			{
+				PictureBox^ pb = pictureBox1;
+
+				Bitmap^ bmp = gcnew Bitmap(rectified[0].cols, rectified[0].rows, rectified[0].step,
+					System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(rectified[0].data));
+
+				if (lineToolStripMenuItem->Checked)
+				{
+					Graphics^g = Graphics::FromImage(bmp);
+					SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
+					Pen^ pen = gcnew Pen(brush, 1);
+					for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
+						g->DrawLine(pen, 0, y, bmp->Width, y);
+					}
+				}
+
+				pb->Image = bmp;
+				pb->Refresh();
+			}
+			{
+				PictureBox^ pb = pictureBox2;
+
+				Bitmap^ bmp;
+				if (viewResultToolStripMenuItem->Checked) {
+					bmp = gcnew Bitmap(disp.cols, disp.rows, disp.step,
+						System::Drawing::Imaging::PixelFormat::Format8bppIndexed, IntPtr(disp.data));
+					System::Drawing::Imaging::ColorPalette^ palette = bmp->Palette;
+					for (int i = 0; i < palette->Entries->Length; i++)
+					{
+						palette->Entries[i] = Color::FromArgb(i, i, i);
+					}
+					bmp->Palette = palette;
+				
+				}
+				else {
+					bmp = gcnew Bitmap(rectified[1].cols, rectified[1].rows, rectified[1].step,
+						System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(rectified[1].data));
+				}
+
+				if (lineToolStripMenuItem->Checked)
+				{
+					Graphics^g = Graphics::FromImage(bmp);
+					SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
+					Pen^ pen = gcnew Pen(brush, 1);
+					for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
+						g->DrawLine(pen, 0, y, bmp->Width, y);
+					}
+				}
+
+				pb->Image = bmp;
+				pb->Refresh();
+			}
+		}
+		if (!finishcalib)
+			MessageLabel->Text = "Recording... " + imgcount.ToString() + "  rms=" + prerms.ToString();
+		else
+			MessageLabel->Text = "Reprojection Error=" + rms.ToString();
 	}
-	else {
-
-		{
-			PictureBox^ pb = pictureBox1;
-
-			Bitmap^ bmp = gcnew Bitmap(rectified[0].cols, rectified[0].rows, rectified[0].step,
-				System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(rectified[0].data));
-
-			if (lineToolStripMenuItem->Checked)
-			{
-				Graphics^g = Graphics::FromImage(bmp);
-				SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
-				Pen^ pen = gcnew Pen(brush, 1);
-				for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
-					g->DrawLine(pen, 0, y, bmp->Width, y);
-				}
-			}
-
-			pb->Image = bmp;
-			pb->Refresh();
-		}
-		{
-			PictureBox^ pb = pictureBox2;
-
-			Bitmap^ bmp;
-			if (viewResultToolStripMenuItem->Checked) {
-				bmp = gcnew Bitmap(disp.cols, disp.rows, disp.step,
-					System::Drawing::Imaging::PixelFormat::Format16bppGrayScale, IntPtr(disp.data));
-			}
-			else {
-				bmp = gcnew Bitmap(rectified[1].cols, rectified[1].rows, rectified[1].step,
-					System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(rectified[1].data));
-			}
-
-			if (lineToolStripMenuItem->Checked)
-			{
-				Graphics^g = Graphics::FromImage(bmp);
-				SolidBrush^ brush = gcnew SolidBrush(Color::Lime);
-				Pen^ pen = gcnew Pen(brush, 1);
-				for (int y = 0; y < bmp->Height; y += bmp->Height / linenum) {
-					g->DrawLine(pen, 0, y, bmp->Width, y);
-				}
-			}
-
-			pb->Image = bmp;
-			pb->Refresh();
-		}
-	}
-	if (!finishcalib)
-		MessageLabel->Text = "Recording... "+ imgcount.ToString() + "  rms=" + prerms.ToString();
-	else
-		MessageLabel->Text = "Reprojection Error=" + rms.ToString();
+	catch (System::AccessViolationException^ e) {}
+	catch (System::ArgumentException^ e) {}
+	catch (System::Exception^ e) {}
 
 	
 }
