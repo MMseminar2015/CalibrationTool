@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "Configurations.h"
 
 namespace CalibrationTool {
 
@@ -19,7 +20,11 @@ namespace CalibrationTool {
 		System::String^ dir;
 		int c_width;
 		int c_height;
+		int numimg;
 	private: System::Windows::Forms::PictureBox^  chessimg;
+	private: System::Windows::Forms::NumericUpDown^  NumImgnumericUpDown;
+	private: System::Windows::Forms::Label^  label8;
+	private: System::Windows::Forms::Label^  label7;
 
 
 			 double c_size;
@@ -33,6 +38,20 @@ namespace CalibrationTool {
 			//
 			//TODO: ここにコンストラクター コードを追加します
 			//
+		}
+
+		NewProjectForm(Configurations^ conf)
+		{
+			InitializeComponent();
+			//
+			//TODO: ここにコンストラクター コードを追加します
+			//
+			SaveDir->Text = conf->savedir;
+			ChessHeight->Value = conf->chess_height;
+			ChessWidth->Value = conf->chess_width;
+			ChessSize->Value = (Decimal)conf->chess_size;
+
+			DrawChessBoard();
 		}
 
 	protected:
@@ -67,7 +86,7 @@ namespace CalibrationTool {
 	private: System::Windows::Forms::Button^  OK_Button;
 
 
-	private: System::Windows::Forms::GroupBox^  groupBox2;
+
 	private: System::Windows::Forms::Label^  label6;
 	private: System::Windows::Forms::Button^  BrowseButton;
 	private: System::Windows::Forms::FolderBrowserDialog^  folderBrowserDialog1;
@@ -87,6 +106,10 @@ namespace CalibrationTool {
 		{
 			this->SaveDir = (gcnew System::Windows::Forms::TextBox());
 			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
+			this->NumImgnumericUpDown = (gcnew System::Windows::Forms::NumericUpDown());
+			this->label8 = (gcnew System::Windows::Forms::Label());
+			this->label7 = (gcnew System::Windows::Forms::Label());
+			this->chessimg = (gcnew System::Windows::Forms::PictureBox());
 			this->ChessSize = (gcnew System::Windows::Forms::NumericUpDown());
 			this->ChessHeight = (gcnew System::Windows::Forms::NumericUpDown());
 			this->ChessWidth = (gcnew System::Windows::Forms::NumericUpDown());
@@ -96,16 +119,15 @@ namespace CalibrationTool {
 			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->OK_Button = (gcnew System::Windows::Forms::Button());
-			this->groupBox2 = (gcnew System::Windows::Forms::GroupBox());
 			this->label6 = (gcnew System::Windows::Forms::Label());
 			this->BrowseButton = (gcnew System::Windows::Forms::Button());
 			this->folderBrowserDialog1 = (gcnew System::Windows::Forms::FolderBrowserDialog());
-			this->chessimg = (gcnew System::Windows::Forms::PictureBox());
 			this->groupBox1->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->NumImgnumericUpDown))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chessimg))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessSize))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessHeight))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessWidth))->BeginInit();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chessimg))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// SaveDir
@@ -117,6 +139,9 @@ namespace CalibrationTool {
 			// 
 			// groupBox1
 			// 
+			this->groupBox1->Controls->Add(this->NumImgnumericUpDown);
+			this->groupBox1->Controls->Add(this->label8);
+			this->groupBox1->Controls->Add(this->label7);
 			this->groupBox1->Controls->Add(this->chessimg);
 			this->groupBox1->Controls->Add(this->ChessSize);
 			this->groupBox1->Controls->Add(this->ChessHeight);
@@ -126,12 +151,46 @@ namespace CalibrationTool {
 			this->groupBox1->Controls->Add(this->label3);
 			this->groupBox1->Controls->Add(this->label2);
 			this->groupBox1->Controls->Add(this->label1);
-			this->groupBox1->Location = System::Drawing::Point(12, 268);
+			this->groupBox1->Location = System::Drawing::Point(12, 88);
 			this->groupBox1->Name = L"groupBox1";
 			this->groupBox1->Size = System::Drawing::Size(419, 302);
 			this->groupBox1->TabIndex = 3;
 			this->groupBox1->TabStop = false;
-			this->groupBox1->Text = L"Chess Board";
+			// 
+			// NumImgnumericUpDown
+			// 
+			this->NumImgnumericUpDown->Location = System::Drawing::Point(27, 180);
+			this->NumImgnumericUpDown->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 10, 0, 0, 0 });
+			this->NumImgnumericUpDown->Name = L"NumImgnumericUpDown";
+			this->NumImgnumericUpDown->Size = System::Drawing::Size(70, 19);
+			this->NumImgnumericUpDown->TabIndex = 15;
+			this->NumImgnumericUpDown->Value = System::Decimal(gcnew cli::array< System::Int32 >(4) { 20, 0, 0, 0 });
+			// 
+			// label8
+			// 
+			this->label8->AutoSize = true;
+			this->label8->Location = System::Drawing::Point(8, 165);
+			this->label8->Name = L"label8";
+			this->label8->Size = System::Drawing::Size(92, 12);
+			this->label8->TabIndex = 14;
+			this->label8->Text = L"Number of Image";
+			// 
+			// label7
+			// 
+			this->label7->AutoSize = true;
+			this->label7->Location = System::Drawing::Point(8, 16);
+			this->label7->Name = L"label7";
+			this->label7->Size = System::Drawing::Size(71, 12);
+			this->label7->TabIndex = 13;
+			this->label7->Text = L"Chess Board";
+			// 
+			// chessimg
+			// 
+			this->chessimg->Location = System::Drawing::Point(179, 16);
+			this->chessimg->Name = L"chessimg";
+			this->chessimg->Size = System::Drawing::Size(234, 280);
+			this->chessimg->TabIndex = 12;
+			this->chessimg->TabStop = false;
 			// 
 			// ChessSize
 			// 
@@ -208,22 +267,13 @@ namespace CalibrationTool {
 			// 
 			// OK_Button
 			// 
-			this->OK_Button->Location = System::Drawing::Point(355, 576);
+			this->OK_Button->Location = System::Drawing::Point(356, 396);
 			this->OK_Button->Name = L"OK_Button";
 			this->OK_Button->Size = System::Drawing::Size(75, 23);
 			this->OK_Button->TabIndex = 4;
 			this->OK_Button->Text = L"OK";
 			this->OK_Button->UseVisualStyleBackColor = true;
 			this->OK_Button->Click += gcnew System::EventHandler(this, &NewProjectForm::OK_Button_Click);
-			// 
-			// groupBox2
-			// 
-			this->groupBox2->Location = System::Drawing::Point(12, 122);
-			this->groupBox2->Name = L"groupBox2";
-			this->groupBox2->Size = System::Drawing::Size(420, 124);
-			this->groupBox2->TabIndex = 5;
-			this->groupBox2->TabStop = false;
-			this->groupBox2->Text = L"Camera";
 			// 
 			// label6
 			// 
@@ -244,22 +294,13 @@ namespace CalibrationTool {
 			this->BrowseButton->UseVisualStyleBackColor = true;
 			this->BrowseButton->Click += gcnew System::EventHandler(this, &NewProjectForm::BrowseButton_Click);
 			// 
-			// chessimg
-			// 
-			this->chessimg->Location = System::Drawing::Point(179, 16);
-			this->chessimg->Name = L"chessimg";
-			this->chessimg->Size = System::Drawing::Size(234, 280);
-			this->chessimg->TabIndex = 12;
-			this->chessimg->TabStop = false;
-			// 
 			// NewProjectForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 12);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(442, 611);
+			this->ClientSize = System::Drawing::Size(442, 422);
 			this->Controls->Add(this->BrowseButton);
 			this->Controls->Add(this->label6);
-			this->Controls->Add(this->groupBox2);
 			this->Controls->Add(this->OK_Button);
 			this->Controls->Add(this->groupBox1);
 			this->Controls->Add(this->SaveDir);
@@ -267,10 +308,11 @@ namespace CalibrationTool {
 			this->Text = L"NewProjectForm";
 			this->groupBox1->ResumeLayout(false);
 			this->groupBox1->PerformLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->NumImgnumericUpDown))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chessimg))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessSize))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessHeight))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->ChessWidth))->EndInit();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->chessimg))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -288,6 +330,7 @@ private: System::Void OK_Button_Click(System::Object^  sender, System::EventArgs
 	c_width = int(ChessWidth->Value);
 	c_height = int(ChessHeight->Value);
 	c_size = double(ChessSize->Value);
+	numimg = int(NumImgnumericUpDown->Value);
 
 	this->Close();
 }
@@ -296,17 +339,35 @@ private: System::Void OK_Button_Click(System::Object^  sender, System::EventArgs
 			 int GetChessWidth(){ return c_width; }
 			 int GetChessHeight() { return c_height; }
 			 double GetChessSize() { return c_size; }
+			 int GetNumImg() { return numimg; }
 
 
 private: System::Void Chess_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
+	DrawChessBoard();
 }
 
 private: System::Void DrawChessBoard() {
-	//Bitmap^ canvas = gcnew Bitmap(chessimg->Width, chessimg->.Height);
-	////ImageオブジェクトのGraphicsオブジェクトを作成する
-	//Graphics^ g = Graphics::FromImage(canvas);
+	Bitmap^ canvas = gcnew Bitmap(chessimg->Width, chessimg->Height);
+	//ImageオブジェクトのGraphicsオブジェクトを作成する
+	Graphics^ g = Graphics::FromImage(canvas);
 
-	//System::Drawing::Region^ rgn;
+	System::Drawing::Region^ rgn= gcnew System::Drawing::Region();
+
+	int size = chessimg->Width / int(ChessWidth->Value);
+	if (size > chessimg->Height / int(ChessHeight->Value))
+		size = chessimg->Height / int(ChessHeight->Value);
+
+	for (int i = 0; i < int(ChessWidth->Value); i++) {
+		for (int j = 0; j < int(ChessHeight->Value); j++) {
+			System::Drawing::Rectangle^ rect=gcnew System::Drawing::Rectangle(size*i, size*j, size, size);
+			if((i+j)%2==0)
+				g->FillRectangle(Brushes::Black, *rect);
+			else
+				g->FillRectangle(Brushes::White, *rect);
+			
+
+		}
+	}
 	//System::Drawing::Rectangle^ rect1;
 	//System::Drawing::Rectangle^ rect2;
 
@@ -326,11 +387,11 @@ private: System::Void DrawChessBoard() {
 	//g->FillRegion(Brushes::Black, rgn);
 
 
-	////リソースを解放する
+	//リソースを解放する
 	//g->Dispose();
 
-	////PictureBox1に表示する
-	//chessimg->Image = canvas;
+	//PictureBox1に表示する
+	chessimg->Image = canvas;
 
 }
 

@@ -10,17 +10,22 @@
 
 cv::Mat pic[2];
 cv::Mat rectified[2];
+cv::Mat disp;
 std::vector<cv::Mat> leftvec;
 std::vector<cv::Mat> rightvec;
 std::vector<int> goodindex;
 StereoMatching stereo;
-System::Void FindChessboardThread();
+//System::Void FindChessboardThread();
 int imgcount = 0;
 double rms = 0;
 bool finishcalib = false;
 bool foundLeft = false;
 bool foundRight = false;
 double prerms = 10000;
+
+std::string IntrinsicFile = "intrinsic.xml";
+std::string ExtrinsicFile = "extrinsic.xml";
+std::string RemapFile = "remap.xml";
 
 int state = 0;
 bool rpr = true;
@@ -31,16 +36,24 @@ void CalibrationTool::MainForm::ReloadPicture()
 	throw gcnew System::NotImplementedException();
 }
 
+void MarshalString(System::String^ s, string& os) {
+	using namespace System::Runtime::InteropServices;
+	const char* chars =
+		(const char*)(Marshal::StringToHGlobalAnsi(s)).ToPointer();
+	os = chars;
+	Marshal::FreeHGlobal(System::IntPtr((void*)chars));
+}
+
 System::Void CalibrationTool::MainForm::RecordThread()
 {
 	recflg = true;
+	nfindthread = 0;
 
 	cv::Size size;
-	int a = MainForm::conf.chess_width;
-	stereo = StereoMatching(MainForm::conf.chess_width, MainForm::conf.chess_height, MainForm::conf.chess_size);
+	stereo = StereoMatching(MainForm::conf->chess_width, MainForm::conf->chess_height, MainForm::conf->chess_size);
 	
 
-	FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30, 30);
+	//FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30, 30);
 	
 	int count = 0;
 	int index = 0;
@@ -50,11 +63,11 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	//namedWindow("1", CV_WINDOW_AUTOSIZE);
 	//namedWindow("2", CV_WINDOW_AUTOSIZE);
 
-	while (1) {
-		//RecordCamera rec;
-		//Thread::Sleep(100);
-		//rec.Recording(pic);
-		fly.GetImages(pic);
+	while (!newflg) {
+		RecordCamera rec;
+		Thread::Sleep(100);
+		rec.Recording(pic);
+		//fly.GetImages(pic);
 
 		//if(!finishcalib)
 		//{
@@ -83,6 +96,9 @@ System::Void CalibrationTool::MainForm::RecordThread()
 				//th->IsBackground = true;
 				//th->Start(index);
 
+				//nfindthread++;
+				System::Threading::Interlocked::Increment(nfindthread);
+				
 				//スレッドプールの利用
 				WaitCallback^ waitCallback = gcnew WaitCallback(this,&MainForm::FindChessboardThread);
 				ThreadPool::QueueUserWorkItem(waitCallback, index);
@@ -105,7 +121,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 				rpr = true;*/
 			
 			//30枚撮ったら終了
-			if(imgcount > 20)
+			if(imgcount >= conf->numimg)
 			{
 				recflg = false;
 				//MainForm::progressBar1->Visible = true;
@@ -126,13 +142,13 @@ System::Void CalibrationTool::MainForm::RecordThread()
 
 					alg = bMToolStripMenuItem->Checked ? 0 : 1;
 
-					Mat disp8;
+					//Mat disp8;
 					if(rectifiedToolStripMenuItem->Checked)
-						StereoMatching::Matching(rectified[0], rectified[1], disp8, alg);
+						StereoMatching::Matching(rectified[0], rectified[1], disp, alg);
 					else
-						StereoMatching::Matching(pic[0], pic[1], disp8, alg);
-					imshow("disparity", disp8);
-					waitKey(1);
+						StereoMatching::Matching(pic[0], pic[1], disp, alg);
+					//imshow("disparity", disp8);
+					//waitKey(1);
 				}
 			}
 		}
@@ -140,6 +156,37 @@ System::Void CalibrationTool::MainForm::RecordThread()
 
 		// 画面を更新
 		BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
+
+		if (!finishcalib) { saveflg = false; }
+
+		if (saveflg) {
+
+			DateTime^ t = DateTime::Now;
+			System::String^ file;
+			if(System::IO::Directory::Exists(conf->savedir))
+				file= conf->savedir + "\\" + t->ToString("yyyyMMddHHmmssfff");
+			else
+				file = t->ToString("yyyyMMddHHmmssfff");
+			std::string stdfile;
+			MarshalString(file, stdfile);
+
+			cv::imwrite(stdfile + "_orgl.png", pic[0]);
+			cv::imwrite(stdfile + "_orgr.png", pic[1]);
+			cv::imwrite(stdfile + "_rctl.png", rectified[0]);
+			cv::imwrite(stdfile + "_rectr.png", rectified[1]);
+
+			alg = bMToolStripMenuItem->Checked ? 0 : 1;
+
+			Mat disp8;
+
+			StereoMatching::Matching(rectified[0], rectified[1], disp8, alg);
+			cv::imwrite(stdfile + "_disprect.png", disp8);
+			StereoMatching::Matching(pic[0], pic[1], disp8, alg);
+			cv::imwrite(stdfile + "_disporg.png", disp8);
+
+		}
+
+
 		//Display();
 	}
 }
@@ -154,6 +201,7 @@ System::Void CalibrationTool::MainForm::FindChessboardThread(Object^ o)
 		goodindex.push_back(index);
 		imgcount++;
 	}
+	System::Threading::Interlocked::Decrement(nfindthread);
 }
 
 System::Void CalibrationTool::MainForm::StereoMatchingThread(Object^ o) {
@@ -164,12 +212,6 @@ System::Void CalibrationTool::MainForm::StereoMatchingThread(Object^ o) {
 
 System::Void CalibrationTool::MainForm::Display()
 {
-	if(foundLeft) textBox1->Text = "found";
-	else textBox1->Text = "";
-	if (foundRight) textBox2->Text = "found";
-	else textBox2->Text = "";
-	if(recflg) button_record->Text = "Stop";
-	else button_record->Text = "Record";
 	//if (!finishcalib) 
 	//{
 	//	/*{
@@ -258,9 +300,6 @@ System::Void CalibrationTool::MainForm::Display()
 	//	MessageLabel->Text = "RSM=" + rms.ToString();
 	//}
 
-	if (!refreshflg)//画面を更新しない
-		return;
-
 	int linenum = 20;
 	if (!finishcalib || !rectifiedToolStripMenuItem->Checked)
 	{
@@ -287,8 +326,15 @@ System::Void CalibrationTool::MainForm::Display()
 
 			PictureBox^ pb = pictureBox2;
 
-			Bitmap^ bmp = gcnew Bitmap(pic[1].cols, pic[1].rows, pic[1].step,
-				System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(pic[1].data));
+			Bitmap^ bmp;
+			if (viewResultToolStripMenuItem->Checked){
+				bmp = gcnew Bitmap(disp.cols, disp.rows, disp.step,
+					System::Drawing::Imaging::PixelFormat::Format16bppGrayScale, IntPtr(disp.data));
+			}
+			else {
+				bmp = gcnew Bitmap(pic[1].cols, pic[1].rows, pic[1].step,
+					System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(pic[1].data));
+			}
 
 			if (lineToolStripMenuItem->Checked)
 			{
@@ -329,9 +375,15 @@ System::Void CalibrationTool::MainForm::Display()
 		{
 			PictureBox^ pb = pictureBox2;
 
-
-			Bitmap^ bmp = gcnew Bitmap(rectified[1].cols, rectified[1].rows, rectified[1].step,
-				System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(rectified[1].data));
+			Bitmap^ bmp;
+			if (viewResultToolStripMenuItem->Checked) {
+				bmp = gcnew Bitmap(disp.cols, disp.rows, disp.step,
+					System::Drawing::Imaging::PixelFormat::Format16bppGrayScale, IntPtr(disp.data));
+			}
+			else {
+				bmp = gcnew Bitmap(rectified[1].cols, rectified[1].rows, rectified[1].step,
+					System::Drawing::Imaging::PixelFormat::Format24bppRgb, IntPtr(rectified[1].data));
+			}
 
 			if (lineToolStripMenuItem->Checked)
 			{
@@ -373,6 +425,14 @@ System::Void CalibrationTool::MainForm::CalibrateThread()
 
 	leftvec.clear();
 	rightvec.clear();
+
+	std::string dir;
+	MarshalString(conf->savedir, dir);
+	if (dir != "")
+		dir += "\\";
+	stereo.OutputIntrinsicParameter(dir + IntrinsicFile);
+	stereo.OutputExtrinsicParameter(dir + ExtrinsicFile);
+	stereo.OutputRectifyParameter(dir + RemapFile);
 
 	finishcalib = true;
 	//for (int i = 0; i < 100; i++) {
@@ -430,14 +490,34 @@ System::Void CalibrationTool::MainForm::ProgressThread() {
 
 }
 
-void CalibrationTool::MainForm::WriteImages() {
-	std::string dir = "";
-	for (int i = 0; i < leftvec.size(); i++) {
-		std::string file = std::to_string(i) + "_left.bmp";
-		cv::imwrite(file, leftvec[i]);
+System::Void CalibrationTool::MainForm::openProjectToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
+
+	std::string dir;
+	MarshalString(conf->savedir, dir);
+	if (dir != "")
+		dir += "\\";
+	if (stereo.InputIntrinsicParameter(dir + IntrinsicFile) &&
+		stereo.InputExtrinsicParameter(dir + ExtrinsicFile) &&
+		stereo.InputRectifyParameter(dir + RemapFile)) {
+		recflg = false;
+		finishcalib = true;
+		rms = 0;
 	}
-	for (int i = 0; i < rightvec.size(); i++) {
-		std::string file = std::to_string(i) + "_right.bmp";
-		cv::imwrite(file, rightvec[i]);
-	}
+
+}
+
+System::Void CalibrationTool::MainForm::initialize() {
+
+	leftvec.clear();
+	rightvec.clear();
+	goodindex.clear();
+	imgcount = 0;
+	rms = 0;
+	finishcalib = false;
+	foundLeft = false;
+	foundRight = false;
+	prerms = 10000;
+
+	state = 0;
+	rpr = true;
 }

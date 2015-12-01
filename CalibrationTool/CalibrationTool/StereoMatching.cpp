@@ -1006,75 +1006,108 @@ int StereoMatching::SetBoardSize(int boardwidth, int boardheight) {
 bool StereoMatching::OutputExtrinsicParameter(std::string outputfile) {
 	// (7)XMLファイルへの書き出し
 	FileStorage fs(outputfile, FileStorage::WRITE);
-	if (fs.isOpened()) {
-		write(fs, "rotation", R);
-		write(fs, "translation", T);
-		write(fs, "essential", E);
-		write(fs, "fundamental", F);
-		fs.release();
-		return true;
+	//if (fs.isOpened()) {
+	//	write(fs, "rotation", R);
+	//	write(fs, "translation", T);
+	//	write(fs, "essential", E);
+	//	write(fs, "fundamental", F);
+	//	fs.release();
+	//	return true;
+	//}
+	//return false;
+
+	fs.open("extrinsics.yml", FileStorage::WRITE);
+	if (fs.isOpened())
+	{
+		try {
+			fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;
+			fs.release();
+			return true;
+		}
+		catch (Exception e) { return false; }
 	}
-	return false;
+	else
+		return false;
 }
 bool StereoMatching::InputExtrinsicParameter(std::string inputfile) {
 	FileStorage fs(inputfile, FileStorage::READ);
 	if (fs.isOpened())
 	{
-		fs["rotation"] >> R;
-		fs["translation"] >> T;
-		fs["essential"] >> E;
-		fs["fundamental"] >> F;
-		fs.release();
-
-		cv::stereoRectify(
-			CameraMatrix[0], DistCoeffs[0],
-			CameraMatrix[1], DistCoeffs[1],
-			ImageSize, R, T,
-			R1, R2, P1, P2, Q,
-			CALIB_ZERO_DISPARITY
-			+ 0,
-			1, ImageSize, &ValidRoi[0], &ValidRoi[1]);
-
-		//Precompute maps for cv::remap()
-		cv::initUndistortRectifyMap(CameraMatrix[0], DistCoeffs[0], R1, P1, ImageSize, CV_16SC2, Rmap[0][0], Rmap[0][1]);
-		cv::initUndistortRectifyMap(CameraMatrix[1], DistCoeffs[1], R2, P2, ImageSize, CV_16SC2, Rmap[1][0], Rmap[1][1]);
-
-		return true;
+		try {
+			fs["R"] >> R;
+			fs["T"] >> T;
+			fs["R1"] >> R1;
+			fs["R2"] >> R2;
+			fs["P1"] >> P1;
+			fs["P2"] >> P2;
+			fs["Q"] >> Q;
+			fs.release();
+			return true;
+		}
+		catch (Exception e) { return false; }
 	}
 	return false;
 }
-bool StereoMatching::OutputIntrinsicParameter(std::string outputfile, Mat cameraMatrix, Mat distCoeffs) {
+
+bool StereoMatching::OutputIntrinsicParameter(std::string outputfile) {
 	FileStorage fs(outputfile, FileStorage::WRITE);
 	if (fs.isOpened()) {
-		write(fs, "cameraMatrix", cameraMatrix);
-		write(fs, "distCoeffs", distCoeffs);
-		fs.release();
-		return true;
+		try {
+			fs << "C1" << CameraMatrix[0] << "D1" << DistCoeffs[0] << "C2" << CameraMatrix[1] << "D2" << DistCoeffs[1];
+			fs.release();
+			return true;
+		}
+		catch (Exception e) { return false; }
 	}
 	return false;
 }
-bool StereoMatching::InputIntrinsicParameter(std::string inputfile, Mat& cameraMatrix, Mat& distCoeffs) {
+bool StereoMatching::InputIntrinsicParameter(std::string inputfile) {
 	FileStorage fs(inputfile, FileStorage::READ);
 	if (fs.isOpened())
 	{
-		fs["cameraMatrix"] >> cameraMatrix;
-		fs["distCoeffs"] >> distCoeffs;
-		fs.release();
-		return true;
+		try {
+			fs["C1"] >> CameraMatrix[0];
+			fs["D1"] >> DistCoeffs[0];
+			fs["C2"] >> CameraMatrix[1];
+			fs["D2"] >> DistCoeffs[1];
+			fs.release();
+			return true;
+		}
+		catch (Exception e) { return false; }
 	}
 	return false;
 
 }
 
-bool StereoMatching::OutputRectifyParameter(std::string outputfile, Mat rmap0, Mat rmap1) {
+bool StereoMatching::OutputRectifyParameter(std::string outputfile) {
 	FileStorage fs(outputfile, FileStorage::WRITE);
 	if (fs.isOpened()) {
-		write(fs, "rmap0", rmap0);
-		write(fs, "rmap1", rmap1);
-		fs.release();
-		return true;
+		try {
+			fs << "Rmap00" << Rmap[0][0] << "Rmap01" << Rmap[0][1] << "Rmap10" << Rmap[1][0] << "Rmap11" <<Rmap[1][1];
+			fs.release();
+			return true;
+		}
+		catch (Exception e) { return false; }
 	}
 	return false;
+}
+
+bool StereoMatching::InputRectifyParameter(std::string inputfile) {
+	FileStorage fs(inputfile, FileStorage::READ);
+	if (fs.isOpened())
+	{
+		try {
+			fs["Rmap00"] >> Rmap[0][0];
+			fs["Rmap01"] >> Rmap[0][1];
+			fs["Rmap10"] >> Rmap[1][0];
+			fs["Rmap11"] >> Rmap[1][1];
+			fs.release();
+			return true;
+		}
+		catch (Exception e) { return false; }
+	}
+	return false;
+
 }
 
 double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std::vector<cv::Mat> rightvec)
@@ -1212,14 +1245,14 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 		//0);
 
 	// (7)XMLファイルへの書き出し
-	FileStorage fs("extrinsic.xml", FileStorage::WRITE);
-	if (fs.isOpened()) {
-		write(fs, "rotation", R);
-		write(fs, "translation", T);
-		write(fs, "essential", E);
-		write(fs, "fundamental", F);
-		fs.release();
-	}
+	//FileStorage fs("extrinsic.xml", FileStorage::WRITE);
+	//if (fs.isOpened()) {
+	//	write(fs, "rotation", R);
+	//	write(fs, "translation", T);
+	//	write(fs, "essential", E);
+	//	write(fs, "fundamental", F);
+	//	fs.release();
+	//}
 
 	// CALIBRATION QUALITY CHECK
 	// because the output fundamental matrix implicitly
@@ -1252,16 +1285,16 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 	progress += 10;
 	// save intrinsic parameters
 	// カメラパラメータと歪みをyml形式で保存
-	FileStorage fs1("intrinsics.yml", FileStorage::WRITE);
-	if (fs1.isOpened())
-	{
-		fs1 << "M1" << cameraMatrix[0] << "D1" << distCoeffs[0] <<
-			"M2" << cameraMatrix[1] << "D2" << distCoeffs[1];
-		fs1.release();
-	}
+	//FileStorage fs1("intrinsics.yml", FileStorage::WRITE);
+	//if (fs1.isOpened())
+	//{
+	//	fs1 << "M1" << cameraMatrix[0] << "D1" << distCoeffs[0] <<
+	//		"M2" << cameraMatrix[1] << "D2" << distCoeffs[1];
+	//	fs1.release();
+	//}
 
 
-	Mat R1, R2, P1, P2, Q;
+	//Mat R1, R2, P1, P2, Q;
 	Rect validRoi[2];
 
 	cv::stereoRectify(cameraMatrix[0], distCoeffs[0],
@@ -1283,12 +1316,12 @@ double StereoMatching::StereoCalibrate_byOhara(std::vector<cv::Mat> leftvec, std
 
 	//Mat tmp = Rmap[0][0];
 
-	fs.open("extrinsics.yml", FileStorage::WRITE);
-	if (fs.isOpened())
-	{
-		fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;// << "rmap" << rmap[0][0];// << "Rmap[0][1]" << Rmap[0][1] << "Rmap[1][0]" << Rmap[1][0] << "Rmap[1][1]" << Rmap[1][1];
-		fs.release();
-	}
+	//fs.open("extrinsics.yml", FileStorage::WRITE);
+	//if (fs.isOpened())
+	//{
+	//	fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;// << "rmap" << rmap[0][0];// << "Rmap[0][1]" << Rmap[0][1] << "Rmap[1][0]" << Rmap[1][0] << "Rmap[1][1]" << Rmap[1][1];
+	//	fs.release();
+	//}
 
 	return rms;
 }

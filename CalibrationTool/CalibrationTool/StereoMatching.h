@@ -112,11 +112,11 @@ public:
 	int SetBoardSize(int boardwidth, int boardheight);
 
 	bool OutputExtrinsicParameter(std::string outputfile);
+	bool OutputIntrinsicParameter(std::string outputfile);
+	bool OutputRectifyParameter(std::string outputfile);
 	bool InputExtrinsicParameter(std::string inputfile);
-	bool InputIntrinsicParameter(std::string inputfile, Mat& cameraMatrix, Mat& distCoeffs);
-	bool OutputIntrinsicParameter(std::string outputfile, Mat cameraMatrix, Mat distCoeffs);
-
-	bool OutputRectifyParameter(std::string outputfile, Mat rmap0, Mat rmap1);
+	bool InputIntrinsicParameter(std::string inputfile);
+	bool InputRectifyParameter(std::string inputfile);
 
 	bool DetectAllPoints(cv::Mat img);
 };
