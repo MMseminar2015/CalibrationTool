@@ -12,8 +12,6 @@ cv::Mat pic[2];
 cv::Mat rectified[2];
 std::vector<cv::Mat> leftvec;
 std::vector<cv::Mat> rightvec;
-std::vector<int> lgoodindex;
-std::vector<int> rgoodindex;
 std::vector<int> goodindex;
 StereoMatching stereo;
 System::Void FindChessboardThread();
@@ -25,6 +23,8 @@ bool foundRight = false;
 double prerms = 10000;
 
 int state = 0;
+bool rpr = true;
+int alg;
 
 void CalibrationTool::MainForm::ReloadPicture()
 {
@@ -44,6 +44,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 	
 	int count = 0;
 	int index = 0;
+	
 
 	////•\Ž¦window
 	//namedWindow("1", CV_WINDOW_AUTOSIZE);
@@ -94,14 +95,17 @@ System::Void CalibrationTool::MainForm::RecordThread()
 				index++;
 			}
 
-			if (imgcount != 0 && imgcount % 20 == 0) {
+			/*if (rpr&&imgcount != 0 && imgcount % 20 == 0) {
 				Thread^ calbt = gcnew Thread(gcnew ThreadStart(this, &MainForm::CalcReprojectionThread));
 				calbt->IsBackground = true;
 				calbt->Start();
+				rpr = false;
 			}
+			if (imgcount % 20 != 0)
+				rpr = true;*/
 			
 			//30–‡ŽB‚Á‚½‚çI—¹
-			if(imgcount > 100)
+			if(imgcount > 20)
 			{
 				recflg = false;
 				//MainForm::progressBar1->Visible = true;
@@ -119,11 +123,14 @@ System::Void CalibrationTool::MainForm::RecordThread()
 				//cv::imshow("2", pic[1]);
 				//cv::waitKey(1);
 				if (viewResultToolStripMenuItem->Checked) {
+
+					alg = bMToolStripMenuItem->Checked ? 0 : 1;
+
 					Mat disp8;
 					if(rectifiedToolStripMenuItem->Checked)
-						StereoMatching::Matching(rectified[0], rectified[1], disp8);
+						StereoMatching::Matching(rectified[0], rectified[1], disp8, alg);
 					else
-						StereoMatching::Matching(pic[0], pic[1], disp8);
+						StereoMatching::Matching(pic[0], pic[1], disp8, alg);
 					imshow("disparity", disp8);
 					waitKey(1);
 				}
@@ -391,7 +398,7 @@ System::Void CalibrationTool::MainForm::CalcReprojectionThread() {
 		stereo.MonoCalibrate(tmpleftvec, tmprightvec);
 		state = 2;
 	}
-	while(state==2)
+	while (state != 2) {}
 
 	double rms=stereo.StereoCalibrate_byOhara_Fast(tmpleftvec, tmprightvec);
 	prerms = rms;

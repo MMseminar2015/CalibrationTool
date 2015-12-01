@@ -269,13 +269,10 @@ int StereoMatching::Matching(
 }
 
 int StereoMatching::Matching(
-	Mat &img1, Mat &img2, Mat &disp8)
+	Mat &img1, Mat &img2, Mat &disp8, int alg)
 {
 
-	enum { STEREO_BM = 0, STEREO_SGBM = 1, STEREO_HH = 2, STEREO_VAR = 3 };
-	int alg = STEREO_SGBM;
-
-	//StereoBM bm;
+	StereoBM bm;
 	StereoSGBM sgbm;
 	//StereoVar var;
 
@@ -283,26 +280,46 @@ int StereoMatching::Matching(
 
 	Rect roi1, roi2;
 	Mat Q;
-
+	Mat disp;
 	int numberOfDisparities = ((img_size.width / 8) + 15) & -16;
 
-	sgbm.preFilterCap = 63;
-	sgbm.SADWindowSize = 3;
+	if (alg == StereoMatching::STEREO_BM) {
+		Mat grayimg1;
+		Mat grayimg2;
+		cvtColor(img1, grayimg1, CV_RGB2GRAY);
+		cvtColor(img2, grayimg2, CV_RGB2GRAY);
 
-	int cn = img1.channels();
+		bm.state->roi1 = roi1;
+		bm.state->roi2 = roi2;
+		bm.state->preFilterCap = 31;
+		bm.state->SADWindowSize = 9;
+		bm.state->minDisparity = 0;
+		bm.state->numberOfDisparities = numberOfDisparities;
+		bm.state->textureThreshold = 10;
+		bm.state->uniquenessRatio = 15;
+		bm.state->speckleWindowSize = 100;
+		bm.state->speckleRange = 32;
+		bm.state->disp12MaxDiff = 1;
+		bm(grayimg1, grayimg2, disp);
+	}
 
-	sgbm.P1 = 8 * cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
-	sgbm.P2 = 32 * cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
-	sgbm.minDisparity = 0;
-	sgbm.numberOfDisparities = numberOfDisparities;
-	sgbm.uniquenessRatio = 10;
-	sgbm.speckleWindowSize = 100;
-	sgbm.speckleRange = 32;
-	sgbm.disp12MaxDiff = 1;
-	sgbm.fullDP = alg == STEREO_HH;
+	else if (alg == StereoMatching::STEREO_SGBM) {
+		sgbm.preFilterCap = 63;
+		sgbm.SADWindowSize = 3;
 
-	Mat disp;
-	sgbm(img1, img2, disp);
+		int cn = img1.channels();
+
+		sgbm.P1 = 8 * cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+		sgbm.P2 = 32 * cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+		sgbm.minDisparity = 0;
+		sgbm.numberOfDisparities = numberOfDisparities;
+		sgbm.uniquenessRatio = 10;
+		sgbm.speckleWindowSize = 100;
+		sgbm.speckleRange = 32;
+		sgbm.disp12MaxDiff = 1;
+		sgbm.fullDP = alg == STEREO_HH;
+		sgbm(img1, img2, disp);
+	}
 
 	disp.convertTo(disp8, CV_8U, 255 / (numberOfDisparities*16.));
 
@@ -1291,21 +1308,21 @@ double StereoMatching::StereoCalibrate_byOhara_Fast(std::vector<cv::Mat> leftvec
 		grayvec[1].push_back(rightimg);
 	}
 
-	//std::vector<cv::Mat> ungrayvec[2];
+	std::vector<cv::Mat> ungrayvec[2];
 
-	/*CvMat
-		*intrisic[2] = { cvCreateMat(3, 3, CV_32FC1), cvCreateMat(3, 3, CV_32FC1) },
-		*dist[2] = { cvCreateMat(1, 4, CV_32FC1),cvCreateMat(1, 4, CV_32FC1) },
-		*kn = cvCreateMat(1, 3, CV_32FC1),
-		*ln = cvCreateMat(1, 3, CV_32FC1);
+	//CvMat
+	//	*intrisic[2] = { cvCreateMat(3, 3, CV_32FC1), cvCreateMat(3, 3, CV_32FC1) },
+	//	*dist[2] = { cvCreateMat(1, 4, CV_32FC1),cvCreateMat(1, 4, CV_32FC1) },
+	//	*kn = cvCreateMat(1, 3, CV_32FC1),
+	//	*ln = cvCreateMat(1, 3, CV_32FC1);
 	for (int i = 0; i < 2; i++) {
-		string filename = "camera";
+		/*string filename = "camera";
 		filename += to_string(i) + ".xml";
-		CalibrateCamera::Calibrate_FromImages(grayvec[i], filename, BoardSize.width, BoardSize.height, SquareSize, intrisic[i], kn, ln, dist[i]);
-		ungrayvec[i] = Undistort::Undistortion(grayvec[i], intrisic[i], dist[i]);
-		CameraMatrix[i] = intrisic[i];
-		DistCoeffs[i] = dist[i];
-	}*/
+		CalibrateCamera::Calibrate_FromImages(grayvec[i], filename, BoardSize.width, BoardSize.height, SquareSize, intrisic[i], kn, ln, dist[i]);*/
+		ungrayvec[i] = Undistort::Undistortion(grayvec[i], CameraMatrix[i], DistCoeffs[i]);
+		/*CameraMatrix[i] = intrisic[i];
+		DistCoeffs[i] = dist[i];*/
+	}
 
 	//
 	// チェッカーボード検出
@@ -1324,7 +1341,7 @@ double StereoMatching::StereoCalibrate_byOhara_Fast(std::vector<cv::Mat> leftvec
 		for (k = 0; k < 2; k++)
 		{
 
-			Mat img = grayvec[k][i]; //ungrayvec[k][i];
+			Mat img = ungrayvec[k][i]; //ungrayvec[k][i];
 
 
 			bool found = false;
@@ -1378,8 +1395,8 @@ double StereoMatching::StereoCalibrate_byOhara_Fast(std::vector<cv::Mat> leftvec
 	// 
 	vector<cv::Mat> newimagelist[2];
 	for (int i = 0; i < goodindex.size(); i++) {
-		newimagelist[0].push_back(grayvec[0][goodindex[i]]);
-		newimagelist[1].push_back(grayvec[1][goodindex[i]]);
+		newimagelist[0].push_back(ungrayvec[0][goodindex[i]]);
+		newimagelist[1].push_back(ungrayvec[1][goodindex[i]]);
 	}
 
 	//
@@ -1387,22 +1404,24 @@ double StereoMatching::StereoCalibrate_byOhara_Fast(std::vector<cv::Mat> leftvec
 	// 初期値(cameraMatrix,distCoeffs)を与える必要あり
 	//
 	double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
-		CameraMatrix[0], DistCoeffs[0],
-		CameraMatrix[1], DistCoeffs[1],
+		cameraMatrix[0], distCoeffs[0],
+		cameraMatrix[1], distCoeffs[1],
 		ImageSize, R, T, E, F,
 		cvTermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 100, 1e-5),
-		CALIB_FIX_INTRINSIC +
-		//CALIB_FIX_PRINCIPAL_POINT +
-		//CALIB_FIX_ASPECT_RATIO +
-		//CALIB_ZERO_TANGENT_DIST +
-		CALIB_USE_INTRINSIC_GUESS +
-		//CALIB_SAME_FOCAL_LENGTH +
-		//CALIB_RATIONAL_MODEL +
-		//CALIB_FIX_K3 +
-		//CALIB_FIX_K4 +
-		//CALIB_FIX_K5 +
-		//CALIB_FIX_K6 +
-		0);
+		CV_CALIB_SAME_FOCAL_LENGTH | CV_CALIB_ZERO_TANGENT_DIST);
+		//cvTermCriteria(CV_TERMCRIT_ITER + CV_TERMCRIT_EPS, 100, 1e-5),
+		//CALIB_FIX_INTRINSIC +
+		////CALIB_FIX_PRINCIPAL_POINT +
+		////CALIB_FIX_ASPECT_RATIO +
+		////CALIB_ZERO_TANGENT_DIST +
+		//CALIB_USE_INTRINSIC_GUESS +
+		////CALIB_SAME_FOCAL_LENGTH +
+		////CALIB_RATIONAL_MODEL +
+		////CALIB_FIX_K3 +
+		////CALIB_FIX_K4 +
+		////CALIB_FIX_K5 +
+		////CALIB_FIX_K6 +
+		//0);
 
 	return rms;
 }

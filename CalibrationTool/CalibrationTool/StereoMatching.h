@@ -22,6 +22,7 @@ using namespace std;
 class StereoMatching
 {
 public:
+	enum { STEREO_BM = 0, STEREO_SGBM = 1, STEREO_HH = 2, STEREO_VAR = 3 };
 
 	Mat CameraMatrix[2], DistCoeffs[2];
 	Mat R, T, F, E;
@@ -62,7 +63,7 @@ public:
 		char* pointcloud_filename = 0);
 
 	static int Matching(
-		Mat &img1, Mat &img2, Mat &disp8);
+		Mat &img1, Mat &img2, Mat &disp8, int alg);
 
 	static void StereoCalibrate(
 		const vector<string>& imagelist,
