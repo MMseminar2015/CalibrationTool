@@ -147,6 +147,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainForm.cpp" />
     <ClCompile Include="NewProjectForm.cpp" />
+    <ClCompile Include="PlyUtility.cpp" />
     <ClCompile Include="RecordCamera.cpp" />
     <ClCompile Include="StereoMatching.cpp" />
     <ClCompile Include="Undistort.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="NewProjectForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="PlyUtility.h" />
     <ClInclude Include="RecordCamera.h" />
     <ClInclude Include="StereoMatching.h" />
     <ClInclude Include="Undistort.h" />
