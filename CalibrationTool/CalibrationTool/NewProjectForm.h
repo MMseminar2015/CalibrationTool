@@ -357,8 +357,8 @@ private: System::Void DrawChessBoard() {
 	if (size > chessimg->Height / int(ChessHeight->Value))
 		size = chessimg->Height / int(ChessHeight->Value);
 
-	for (int i = 0; i < int(ChessWidth->Value); i++) {
-		for (int j = 0; j < int(ChessHeight->Value); j++) {
+	for (int i = 0; i <= int(ChessWidth->Value); i++) {
+		for (int j = 0; j <= int(ChessHeight->Value); j++) {
 			System::Drawing::Rectangle^ rect=gcnew System::Drawing::Rectangle(size*i, size*j, size, size);
 			if((i+j)%2==0)
 				g->FillRectangle(Brushes::Black, *rect);

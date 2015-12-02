@@ -185,7 +185,8 @@ System::Void CalibrationTool::MainForm::RecordThread()
 			cv::imwrite(stdfile + "_disporg.png", disp8);
 			saveflg = false;
 		}
-
+		if (newflg)
+			break;
 
 		//Display();
 	}
