@@ -23,6 +23,10 @@ bool foundLeft = false;
 bool foundRight = false;
 double prerms = 10000;
 
+int index = 0;
+
+
+
 std::string IntrinsicFile = "intrinsic.xml";
 std::string ExtrinsicFile = "extrinsic.xml";
 std::string RemapFile = "remap.xml";
@@ -51,23 +55,24 @@ System::Void CalibrationTool::MainForm::RecordThread()
 
 	cv::Size size;
 	stereo = StereoMatching(MainForm::conf->chess_width, MainForm::conf->chess_height, MainForm::conf->chess_size);
-	
 
-	//FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30, 30);
+	FlyCap fly = FlyCap(FlyCapture2::VideoMode::VIDEOMODE_640x480YUV422, FlyCapture2::FrameRate::FRAMERATE_30, 30);
 	
 	int count = 0;
-	int index = 0;
+	
 	
 
 	////•\Ž¦window
 	//namedWindow("1", CV_WINDOW_AUTOSIZE);
 	//namedWindow("2", CV_WINDOW_AUTOSIZE);
 
-	while (!newflg) {
-		RecordCamera rec;
-		Thread::Sleep(100);
-		rec.Recording(pic);
-		//fly.GetImages(pic);
+	while (!endflg) {
+
+		while (newflg) {}
+		//RecordCamera rec;
+		//Thread::Sleep(100);
+		//rec.Recording(pic);
+		fly.GetImages(pic);
 
 		//if(!finishcalib)
 		//{
@@ -81,7 +86,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 		if (CalibrationTool::MainForm::recflg)
 		{
 			//if (count > fps * 30)
-			//if (count > fps * 30)// && foundLeft && foundRight)
+			if (count > fps * 30)// && foundLeft && foundRight)
 			{
 				leftvec.push_back(pic[0].clone());
 
@@ -157,6 +162,7 @@ System::Void CalibrationTool::MainForm::RecordThread()
 		// ‰æ–Ê‚ðXV
 		BeginInvoke(gcnew DisplayDelegate(this, &MainForm::Display));
 
+
 		if (!finishcalib) { saveflg = false; }
 
 		if (saveflg) {
@@ -185,8 +191,6 @@ System::Void CalibrationTool::MainForm::RecordThread()
 			cv::imwrite(stdfile + "_disporg.png", disp8);
 			saveflg = false;
 		}
-		if (newflg)
-			break;
 
 		//Display();
 	}
@@ -329,7 +333,7 @@ System::Void CalibrationTool::MainForm::Display()
 				PictureBox^ pb = pictureBox2;
 
 				Bitmap^ bmp;
-				if (viewResultToolStripMenuItem->Checked) {
+				if (finishcalib&&viewResultToolStripMenuItem->Checked) {
 					bmp = gcnew Bitmap(disp.cols, disp.rows, disp.step,
 						System::Drawing::Imaging::PixelFormat::Format8bppIndexed, IntPtr(disp.data));
 					System::Drawing::Imaging::ColorPalette^ palette = bmp->Palette;
@@ -385,7 +389,7 @@ System::Void CalibrationTool::MainForm::Display()
 				PictureBox^ pb = pictureBox2;
 
 				Bitmap^ bmp;
-				if (viewResultToolStripMenuItem->Checked) {
+				if (finishcalib&&viewResultToolStripMenuItem->Checked) {
 					bmp = gcnew Bitmap(disp.cols, disp.rows, disp.step,
 						System::Drawing::Imaging::PixelFormat::Format8bppIndexed, IntPtr(disp.data));
 					System::Drawing::Imaging::ColorPalette^ palette = bmp->Palette;
@@ -537,7 +541,7 @@ System::Void CalibrationTool::MainForm::initialize() {
 	foundLeft = false;
 	foundRight = false;
 	prerms = 10000;
-
+	index = 0;
 	state = 0;
 	rpr = true;
 }

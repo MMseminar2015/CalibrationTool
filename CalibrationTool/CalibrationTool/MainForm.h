@@ -39,6 +39,7 @@ namespace CalibrationTool {
 			 double fps;// = 1;
 			 bool saveflg;
 			 bool newflg;
+			 bool endflg;
 			 int nfindthread;
 
 
@@ -56,6 +57,7 @@ namespace CalibrationTool {
 		MainForm(void)
 		{
 			InitializeComponent();
+
 			fps = 1;
 			//
 			//TODO: ここにコンストラクター コードを追加します
@@ -64,6 +66,8 @@ namespace CalibrationTool {
 			//conf->chess_width=10;
 			//conf->chess_size=16.8;
 			conf = Configurations::Load("conf.xml");
+			if(conf->numimg<10)
+				conf=gcnew Configurations(7, 10, 16.8, "", 20);
 
 			recthread = gcnew Thread(gcnew ThreadStart(this, &MainForm::RecordThread));
 			recthread->IsBackground = true;// バックグラウンド化してから起動
@@ -71,6 +75,7 @@ namespace CalibrationTool {
 			recflg = false;
 			saveflg = false;
 			newflg = false;
+			endflg = false;
 
 
 		}
@@ -81,10 +86,14 @@ namespace CalibrationTool {
 		/// </summary>
 		~MainForm()
 		{
+			endflg = true;
+			recthread->Join();
+
 			if (components)
 			{
 				delete components;
 			}
+			
 		}
 
 
@@ -341,20 +350,23 @@ namespace CalibrationTool {
 
 		NewProjectForm ^fm = gcnew NewProjectForm(conf);
 		fm->ShowDialog();
-		conf->savedir = fm->GetSaveDirectory();
-		conf->chess_height = fm->GetChessHeight();
-		conf->chess_width = fm->GetChessWidth();
-		conf->chess_size = fm->GetChessSize();
-		conf->numimg = fm->GetNumImg();
-		Configurations::Save("conf.xml", conf);
+		if (fm->DialogResult == System::Windows::Forms::DialogResult::OK) {
+			conf->savedir = fm->GetSaveDirectory();
+			conf->chess_height = fm->GetChessHeight();
+			conf->chess_width = fm->GetChessWidth();
+			conf->chess_size = fm->GetChessSize();
+			conf->numimg = fm->GetNumImg();
+			Configurations::Save("conf.xml", conf);
+		}
 
 		while (nfindthread != 0) {}
 		initialize();
 		newflg = false;
 
-		recthread = gcnew Thread(gcnew ThreadStart(this, &MainForm::RecordThread));
-		recthread->IsBackground = true;// バックグラウンド化してから起動
-		recthread->Start();
+		//recthread = gcnew Thread(gcnew ThreadStart(this, &MainForm::RecordThread));
+		//recthread->IsBackground = true;// バックグラウンド化してから起動
+		//recthread->Start();
+
 	}
 
 	 private: System::Void pictureBox_Click(System::Object^  sender, System::EventArgs^  e) {
